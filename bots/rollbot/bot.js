@@ -82,7 +82,7 @@ client.on("interactionCreate", async (interaction) => {
 
     let message = `${resultOutputs}`
     if (allRolls.length > 1) {
-      message += `\nTotal: ${total}`
+      message += `\n**Total:** ${total}`
     }
 
     try {
