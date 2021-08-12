@@ -77,11 +77,13 @@ client.on("interactionCreate", async (interaction) => {
       )
       .join("\n")
 
-    const total = results
-      .flatMap((result) => result.rolls)
-      .reduce((total, value) => total + value, 0)
+    const allRolls = results.flatMap((result) => result.rolls)
+    const total = allRolls.reduce((total, value) => total + value, 0)
 
-    const message = `${resultOutputs}\n**Total:** ${total}`
+    let message = `${resultOutputs}`
+    if (allRolls.length > 1) {
+      message += `\nTotal: ${total}`
+    }
 
     try {
       await interaction.editReply(message)
