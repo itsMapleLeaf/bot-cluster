@@ -2,15 +2,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node-dev --no-notify ./bot.js",
+    "dev": "nodemon ./bot.js",
     "start": "node ./bot.js"
   },
   "dependencies": {
-    "discord.js": "13.0.1",
+    "@itsmapleleaf/gatekeeper": "link:../gatekeeper",
+    "discord.js": "^13.1.0",
     "dotenv": "10.0.0"
   },
   "devDependencies": {
-    "node-dev": "7.0.0"
+    "nodemon": "2.0.12"
   },
   "engines": {
     "node": "^16"
