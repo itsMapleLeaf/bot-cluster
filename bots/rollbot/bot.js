@@ -64,12 +64,11 @@ CommandManager.create()
     run: async (context) => {
       const diceString = context.options.dice || "1d6"
 
-      let results = rollDice(diceString)
-      function reroll() {
-        results = rollDice(diceString)
-      }
+      await createRollReply()
 
-      await context.createReply(() => {
+      function createRollReply() {
+        const results = rollDice(diceString)
+
         const resultOutputs = results
           .map((result) =>
             result.type === "roll"
@@ -88,19 +87,17 @@ CommandManager.create()
           message += `\n**Total:** ${total}`
         }
 
-        return [
+        return context.createReply(() => [
           message,
           actionRowComponent(
             buttonComponent({
               label: "reroll",
               style: "PRIMARY",
-              onClick: () => {
-                reroll()
-              },
+              onClick: createRollReply,
             })
           ),
-        ]
-      })
+        ])
+      }
     },
   })
   .useClient(client, {
