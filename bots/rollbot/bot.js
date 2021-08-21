@@ -116,8 +116,8 @@ const gatekeeper = createGatekeeper({ debug: true })
 
 gatekeeper.addCommand(rollCommand)
 gatekeeper.useClient(client, {
-  useGlobalCommands: process.env.NODE_ENV === "production",
-  useGuildCommands: process.env.NODE_ENV !== "production",
+  useGlobalCommands: false,
+  useGuildCommands: true,
 })
 
 await client.login(process.env.BOT_TOKEN).catch(console.error)
