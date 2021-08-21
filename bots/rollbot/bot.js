@@ -85,13 +85,15 @@ const rollCommand = defineSlashCommand({
         allRolls.length > 1 && `**Total:** ${total}`,
         actionRowComponent(
           buttonComponent({
-            label: "reroll",
-            style: "PRIMARY",
+            label: "",
+            emoji: "🎲",
+            style: "SECONDARY",
             onClick: (context) => createRollReply(context.user.id),
           }),
           buttonComponent({
-            label: "delete",
-            style: "DANGER",
+            label: "",
+            emoji: "❌",
+            style: "SECONDARY",
             onClick: (event) => {
               if (event.user.id === (rerollingUserId || context.user.id)) {
                 reply.delete()
