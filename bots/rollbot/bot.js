@@ -61,7 +61,10 @@ const rollCommand = defineSlashCommand({
 
     createRollReply()
 
-    function createRollReply() {
+    /**
+     * @param {string=} rerollingUserId
+     */
+    function createRollReply(rerollingUserId) {
       const results = rollDice(diceString)
 
       const resultOutputs = results
@@ -71,22 +74,33 @@ const rollCommand = defineSlashCommand({
             : `Ignored: ${result.dieString}`
         )
         .join("\n")
+        .trimEnd() // remove last new line
 
       const allRolls = results.flatMap((result) => result.rolls)
       const total = allRolls.reduce((total, value) => total + value, 0)
 
-      let message = `${resultOutputs}`
-      if (allRolls.length > 1) {
-        message += `\n**Total:** ${total}`
-      }
-
-      context.reply(() => [
-        message,
+      const reply = context.reply(() => [
+        rerollingUserId && `(rerolled by <@${rerollingUserId}>)\n`,
+        resultOutputs,
+        allRolls.length > 1 && `**Total:** ${total}`,
         actionRowComponent(
           buttonComponent({
             label: "reroll",
             style: "PRIMARY",
-            onClick: createRollReply,
+            onClick: (context) => createRollReply(context.user.id),
+          }),
+          buttonComponent({
+            label: "delete",
+            style: "DANGER",
+            onClick: (event) => {
+              if (event.user.id === (rerollingUserId || context.user.id)) {
+                reply.delete()
+              } else {
+                event.ephemeralReply(
+                  () => `sorry, only the owner of the roll can delete this!`
+                )
+              }
+            },
           })
         ),
       ])
