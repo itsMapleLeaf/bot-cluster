@@ -2,7 +2,8 @@
 import {
   actionRowComponent,
   buttonComponent,
-  CommandManager,
+  createGatekeeper,
+  defineSlashCommand,
 } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config.js"
@@ -46,63 +47,63 @@ function rollDice(diceString) {
   return results
 }
 
+const rollCommand = defineSlashCommand({
+  name: "roll",
+  description: "rolls a dice",
+  options: {
+    dice: {
+      type: "STRING",
+      description: "dice to roll",
+    },
+  },
+  run(context) {
+    const diceString = context.options.dice || "1d6"
+
+    createRollReply()
+
+    function createRollReply() {
+      const results = rollDice(diceString)
+
+      const resultOutputs = results
+        .map((result) =>
+          result.type === "roll"
+            ? `:game_die: **${result.dieString}** ⇒ ${result.rolls.join(", ")}`
+            : `Ignored: ${result.dieString}`
+        )
+        .join("\n")
+
+      const allRolls = results.flatMap((result) => result.rolls)
+      const total = allRolls.reduce((total, value) => total + value, 0)
+
+      let message = `${resultOutputs}`
+      if (allRolls.length > 1) {
+        message += `\n**Total:** ${total}`
+      }
+
+      context.reply(() => [
+        message,
+        actionRowComponent(
+          buttonComponent({
+            label: "reroll",
+            style: "PRIMARY",
+            onClick: createRollReply,
+          })
+        ),
+      ])
+    }
+  },
+})
+
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
 })
 
-CommandManager.create()
-  .enableLogging()
-  .addSlashCommand({
-    name: "roll",
-    description: "rolls a dice",
-    options: {
-      dice: {
-        type: "STRING",
-        description: "dice to roll",
-      },
-    },
-    run: async (context) => {
-      const diceString = context.options.dice || "1d6"
+const gatekeeper = createGatekeeper({ debug: true })
 
-      await createRollReply()
-
-      function createRollReply() {
-        const results = rollDice(diceString)
-
-        const resultOutputs = results
-          .map((result) =>
-            result.type === "roll"
-              ? `:game_die: **${result.dieString}** ⇒ ${result.rolls.join(
-                  ", "
-                )}`
-              : `Ignored: ${result.dieString}`
-          )
-          .join("\n")
-
-        const allRolls = results.flatMap((result) => result.rolls)
-        const total = allRolls.reduce((total, value) => total + value, 0)
-
-        let message = `${resultOutputs}`
-        if (allRolls.length > 1) {
-          message += `\n**Total:** ${total}`
-        }
-
-        return context.createReply(() => [
-          message,
-          actionRowComponent(
-            buttonComponent({
-              label: "reroll",
-              style: "PRIMARY",
-              onClick: createRollReply,
-            })
-          ),
-        ])
-      }
-    },
-  })
-  .useClient(client, {
-    useGlobalCommands: false,
-    useGuildCommands: true,
-  })
+gatekeeper.addCommand(rollCommand)
+gatekeeper.useClient(client, {
+  useGlobalCommands: process.env.NODE_ENV === "production",
+  useGuildCommands: process.env.NODE_ENV !== "production",
+})
 
 await client.login(process.env.BOT_TOKEN).catch(console.error)
