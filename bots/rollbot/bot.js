@@ -113,11 +113,7 @@ const client = new Client({
 })
 
 const gatekeeper = createGatekeeper({ debug: true })
-
 gatekeeper.addCommand(rollCommand)
-gatekeeper.useClient(client, {
-  useGlobalCommands: false,
-  useGuildCommands: true,
-})
+gatekeeper.useClient(client)
 
 await client.login(process.env.BOT_TOKEN).catch(console.error)

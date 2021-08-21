@@ -1,13 +1,13 @@
 lockfileVersion: 5.3
 
 specifiers:
-  '@itsmapleleaf/gatekeeper': 0.0.1
+  '@itsmapleleaf/gatekeeper': 0.0.2
   discord.js: ^13.1.0
   dotenv: 10.0.0
   nodemon: 2.0.12
 
 dependencies:
-  '@itsmapleleaf/gatekeeper': 0.0.1_discord.js@13.1.0
+  '@itsmapleleaf/gatekeeper': 0.0.2_discord.js@13.1.0
   discord.js: 13.1.0
   dotenv: 10.0.0
 
@@ -41,8 +41,8 @@ packages:
       mime-types: 2.1.32
     dev: false
 
-  /@itsmapleleaf/gatekeeper/0.0.1_discord.js@13.1.0:
-    resolution: {integrity: sha512-ZiQ5cqYEChRN+G3oitvp3nbfH0LKIeTimBp6R0SpClK31wuNwy6LgAYb8FLOZ9IR+T38YfhdoLqqgoCjMGpgzA==}
+  /@itsmapleleaf/gatekeeper/0.0.2_discord.js@13.1.0:
+    resolution: {integrity: sha512-dtFboef5FRnEnTpVesMxFB/n/s9k4tIYYSOXIMWrfWoGF5jzhK7k1smnU+AI69gEIgJG8Q+b+yEAwdwrTfp0gQ==}
     peerDependencies:
       discord.js: '>=13'
     dependencies:
