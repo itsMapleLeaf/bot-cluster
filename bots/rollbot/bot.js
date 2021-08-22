@@ -87,8 +87,8 @@ const rollCommand = defineSlashCommand({
         }),
         buttonComponent({
           label: "",
-          emoji: "✖",
-          style: "DANGER",
+          emoji: "❌",
+          style: "SECONDARY",
           onClick: (event) => {
             if (event.user.id === (rerollingUserId || context.user.id)) {
               reply.delete()
