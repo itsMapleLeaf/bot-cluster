@@ -1,6 +1,5 @@
 // @ts-check
 import {
-  actionRowComponent,
   buttonComponent,
   createGatekeeper,
   defineSlashCommand,
@@ -67,14 +66,11 @@ const rollCommand = defineSlashCommand({
     function createRollReply(rerollingUserId) {
       const results = rollDice(diceString)
 
-      const resultOutputs = results
-        .map((result) =>
-          result.type === "roll"
-            ? `:game_die: **${result.dieString}** ⇒ ${result.rolls.join(", ")}`
-            : `Ignored: ${result.dieString}`
-        )
-        .join("\n")
-        .trimEnd() // remove last new line
+      const resultOutputs = results.map((result) =>
+        result.type === "roll"
+          ? `:game_die: **${result.dieString}** ⇒ ${result.rolls.join(", ")}`
+          : `Ignored: ${result.dieString}`
+      )
 
       const allRolls = results.flatMap((result) => result.rolls)
       const total = allRolls.reduce((total, value) => total + value, 0)
@@ -83,28 +79,26 @@ const rollCommand = defineSlashCommand({
         rerollingUserId && `(rerolled by <@${rerollingUserId}>)\n`,
         resultOutputs,
         allRolls.length > 1 && `**Total:** ${total}`,
-        actionRowComponent(
-          buttonComponent({
-            label: "",
-            emoji: "🎲",
-            style: "SECONDARY",
-            onClick: (context) => createRollReply(context.user.id),
-          }),
-          buttonComponent({
-            label: "",
-            emoji: "❌",
-            style: "SECONDARY",
-            onClick: (event) => {
-              if (event.user.id === (rerollingUserId || context.user.id)) {
-                reply.delete()
-              } else {
-                event.ephemeralReply(
-                  () => `sorry, only the owner of the roll can delete this!`
-                )
-              }
-            },
-          })
-        ),
+        buttonComponent({
+          label: "",
+          emoji: "🎲",
+          style: "PRIMARY",
+          onClick: (context) => createRollReply(context.user.id),
+        }),
+        buttonComponent({
+          label: "",
+          emoji: "✖",
+          style: "DANGER",
+          onClick: (event) => {
+            if (event.user.id === (rerollingUserId || context.user.id)) {
+              reply.delete()
+            } else {
+              event.ephemeralReply(
+                () => `sorry, only the owner of the roll can delete this!`
+              )
+            }
+          },
+        }),
       ])
     }
   },
