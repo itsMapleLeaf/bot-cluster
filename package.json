@@ -1,6 +1,6 @@
 {
   "private": true,
   "scripts": {
-    "start": "pnpm run --recursive --parallel --filter=!rpgbot start"
+    "start": "pnpm run --recursive --parallel start"
   }
 }
