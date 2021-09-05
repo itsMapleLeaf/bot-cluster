@@ -5,7 +5,7 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@itsmapleleaf/gatekeeper": "0.3.0",
+    "@itsmapleleaf/gatekeeper": "0.3.1",
     "discord.js": "13.1.0",
     "dotenv": "10.0.0"
   },
