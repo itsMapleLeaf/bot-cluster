@@ -201,4 +201,4 @@ const gatekeeper = createGatekeeper({ debug: true })
 gatekeeper.addCommand(rpsCommand)
 gatekeeper.useClient(client)
 
-client.login(process.env.BOT_TOKEN)
+client.login(process.env.RPS_BOT_TOKEN)

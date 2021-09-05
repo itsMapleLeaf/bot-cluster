@@ -69,7 +69,7 @@ const rollCommand = defineSlashCommand({
       const resultOutputs = results.map((result) =>
         result.type === "roll"
           ? `:game_die: **${result.dieString}** ⇒ ${result.rolls.join(", ")}`
-          : `Ignored: ${result.dieString}`
+          : `Ignored: ${result.dieString}`,
       )
 
       const allRolls = results.flatMap((result) => result.rolls)
@@ -94,7 +94,7 @@ const rollCommand = defineSlashCommand({
               reply.delete()
             } else {
               event.ephemeralReply(
-                () => `sorry, only the owner of the roll can delete this!`
+                () => `sorry, only the owner of the roll can delete this!`,
               )
             }
           },
@@ -112,4 +112,4 @@ const gatekeeper = createGatekeeper({ debug: true })
 gatekeeper.addCommand(rollCommand)
 gatekeeper.useClient(client)
 
-await client.login(process.env.BOT_TOKEN).catch(console.error)
+await client.login(process.env.ROLLBOT_BOT_TOKEN).catch(console.error)
