@@ -5,15 +5,15 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@itsmapleleaf/gatekeeper": "0.3.1",
+    "@itsmapleleaf/gatekeeper": "0.3.2",
     "discord.js": "^13.1.0",
     "dotenv": "10.0.0"
   },
   "devDependencies": {
-    "@types/node": "16.7.10",
+    "@types/node": "16.9.1",
     "ts-node": "10.2.1",
     "node-dev": "7.0.0",
-    "typescript": "4.4.2"
+    "typescript": "4.4.3"
   },
   "engines": {
     "node": "^16"
