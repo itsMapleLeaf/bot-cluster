@@ -1,4 +1,3 @@
-// @ts-check
 import { createGatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config.js"
@@ -8,7 +7,7 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
 })
 
-const gatekeeper = createGatekeeper({ debug: true })
+const gatekeeper = createGatekeeper({ name: "rollbot", debug: true })
 gatekeeper.addCommand(rollCommand)
 gatekeeper.useClient(client)
 

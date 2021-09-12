@@ -197,7 +197,7 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
 })
 
-const gatekeeper = createGatekeeper({ debug: true })
+const gatekeeper = createGatekeeper({ name: "rps-bot", debug: true })
 gatekeeper.addCommand(rpsCommand)
 gatekeeper.useClient(client)
 
