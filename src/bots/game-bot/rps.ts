@@ -1,11 +1,7 @@
-import {
-  buttonComponent,
-  createGatekeeper,
-  defineUserCommand,
-} from "@itsmapleleaf/gatekeeper"
-import { Client, EmojiResolvable, Intents, User } from "discord.js"
-import "dotenv/config"
+import { buttonComponent, defineUserCommand } from "@itsmapleleaf/gatekeeper"
+import { EmojiResolvable, User } from "discord.js"
 import { setTimeout } from "timers/promises"
+import { client } from "./main"
 
 type Choice = typeof choices[number]
 const choices = ["rock", "paper", "scissors"] as const
@@ -40,7 +36,7 @@ const choiceEmoji: Record<Choice, EmojiResolvable> = {
   scissors: "✂️",
 }
 
-const rpsCommand = defineUserCommand({
+export const rpsCommand = defineUserCommand({
   name: "Rock, Paper, Scissors!",
   run(context) {
     const player1 = context.user
@@ -102,6 +98,7 @@ const rpsCommand = defineUserCommand({
           `${mention(player1)} challenged ${mention(
             player2,
           )} to rock, paper scissors. Do you accept?`,
+
           buttonComponent({
             label: "accept",
             style: "PRIMARY",
@@ -119,6 +116,7 @@ const rpsCommand = defineUserCommand({
               }
             },
           }),
+
           buttonComponent({
             label: "deny",
             style: "SECONDARY",
@@ -192,15 +190,3 @@ const rpsCommand = defineUserCommand({
     })
   },
 })
-
-const client = new Client({
-  intents: [Intents.FLAGS.GUILDS],
-})
-
-const gatekeeper = createGatekeeper({ name: "rps-bot", debug: true })
-gatekeeper.addCommand(rpsCommand)
-gatekeeper.useClient(client)
-
-export function run() {
-  return client.login(process.env.RPS_BOT_TOKEN)
-}
