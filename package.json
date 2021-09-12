@@ -1,6 +1,21 @@
 {
   "private": true,
   "scripts": {
-    "start": "pnpm run --recursive --parallel start"
+    "dev": "node-dev --no-notify src/main.ts",
+    "start": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "@itsmapleleaf/gatekeeper": "0.3.1",
+    "discord.js": "^13.1.0",
+    "dotenv": "10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "16.7.10",
+    "ts-node": "10.2.1",
+    "node-dev": "7.0.0",
+    "typescript": "4.4.2"
+  },
+  "engines": {
+    "node": "^16"
   }
 }

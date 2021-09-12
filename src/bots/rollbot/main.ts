@@ -12,4 +12,6 @@ const gatekeeper = createGatekeeper({ debug: true })
 gatekeeper.addCommand(rollCommand)
 gatekeeper.useClient(client)
 
-client.login(process.env.ROLLBOT_BOT_TOKEN).catch(console.error)
+export function run() {
+  return client.login(process.env.ROLLBOT_BOT_TOKEN)
+}
