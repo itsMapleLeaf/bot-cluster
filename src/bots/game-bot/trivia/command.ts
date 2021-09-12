@@ -1,9 +1,12 @@
 import {
   buttonComponent,
+  ButtonInteractionContext,
   defineSlashCommand,
+  InteractionContext,
   selectMenuComponent,
 } from "@itsmapleleaf/gatekeeper"
 import { fetchCategories, TriviaCategory } from "./api.js"
+import { commaSeparatedList } from "./commaSeparatedList.js"
 
 export const triviaCommand = defineSlashCommand({
   name: "trivia",
@@ -14,39 +17,47 @@ export const triviaCommand = defineSlashCommand({
     const categories = await fetchCategories()
     const categoryIds = categories.map((category) => category.id).map(String)
 
+    const admin = context.user
     let state: "lobby" | "categorySelect" | "game" = "lobby"
-    let playerIds = new Set<string>()
+    let playerIds = new Set<string>([admin.id])
     let selectedCategoryIds = categoryIds
 
     context.reply(() => {
       switch (state) {
-        case "lobby":
+        case "lobby": {
           return lobbyComponent({
             playerIds,
             onJoin: (playerId) => {
               playerIds.add(playerId)
             },
             onLeave: (playerId) => {
+              if (playerId === admin.id) {
+                return context.ephemeralReply(() => {
+                  return "You can't leave the game you started!"
+                })
+              }
               playerIds.delete(playerId)
             },
-            onStart: () => {
+            onStart: withPermission([admin.id], () => {
               state = "categorySelect"
-            },
+            }),
           })
+        }
 
-        case "categorySelect":
+        case "categorySelect": {
           return categorySelectComponent({
             categories,
             selectedCategoryIds,
-            onChange: (selection) => {
-              selectedCategoryIds = selection
-            },
-            onConfirm: () => {
+            onChange: withPermission([admin.id], (_, selected) => {
+              selectedCategoryIds = selected
+            }),
+            onConfirm: withPermission([admin.id], () => {
               state = "game"
-            },
+            }),
           })
+        }
 
-        case "game":
+        case "game": {
           return [
             `players:`,
             [...playerIds].map((id) => `<@${id}>`),
@@ -56,7 +67,10 @@ export const triviaCommand = defineSlashCommand({
               .map((id) => categories.find((c) => c.id === id)?.name)
               .filter(Boolean),
           ]
+        }
       }
+
+      return `lol wtf this shouldn't happen oops?`
     })
   },
 })
@@ -70,7 +84,7 @@ function lobbyComponent({
   playerIds: Iterable<string>
   onJoin: (playerId: string) => void
   onLeave: (playerId: string) => void
-  onStart: () => void
+  onStart: (context: ButtonInteractionContext) => void
 }) {
   return [
     `players: ${[...playerIds].map((id) => `<@${id}>`)}`,
@@ -91,9 +105,7 @@ function lobbyComponent({
     buttonComponent({
       label: "Start",
       style: "PRIMARY",
-      onClick: (buttonContext) => {
-        onStart()
-      },
+      onClick: onStart,
     }),
   ]
 }
@@ -106,8 +118,8 @@ function categorySelectComponent({
 }: {
   categories: TriviaCategory[]
   selectedCategoryIds: string[]
-  onChange: (selectedCategoryIds: string[]) => void
-  onConfirm: () => void
+  onChange: (context: InteractionContext, selectedCategoryIds: string[]) => void
+  onConfirm: (context: ButtonInteractionContext) => void
 }) {
   const categoryIds = categories.map((category) => category.id).map(String)
 
@@ -119,8 +131,8 @@ function categorySelectComponent({
       })),
       selected: selectedCategoryIds,
       minValues: 1,
-      onSelect: ({ values }) => {
-        onChange(values)
+      onSelect: (context) => {
+        onChange(context, context.values)
       },
     }),
 
@@ -128,7 +140,7 @@ function categorySelectComponent({
       label: "Select None",
       style: "SECONDARY",
       onClick: (context) => {
-        onChange([])
+        onChange(context, [])
       },
     }),
 
@@ -136,7 +148,7 @@ function categorySelectComponent({
       label: "Select All",
       style: "SECONDARY",
       onClick: (context) => {
-        onChange(categoryIds)
+        onChange(context, categoryIds)
       },
     }),
 
@@ -145,7 +157,10 @@ function categorySelectComponent({
       emoji: "🎲",
       style: "SECONDARY",
       onClick: (context) => {
-        onChange(categoryIds.filter(() => Math.random() > 0.5))
+        onChange(
+          context,
+          categoryIds.filter(() => Math.random() > 0.5),
+        )
       },
     }),
 
@@ -153,9 +168,32 @@ function categorySelectComponent({
       label: "Confirm",
       style: "PRIMARY",
       disabled: !selectedCategoryIds.length,
-      onClick: (context) => {
-        onConfirm()
-      },
+      onClick: onConfirm,
     }),
   ]
+}
+
+function withPermission<
+  Context extends InteractionContext,
+  Args extends unknown[],
+>(
+  allowedUserIds: string[],
+  callback: (context: Context, ...args: Args) => void,
+): typeof callback {
+  return (context, ...args) => {
+    if (!allowedUserIds.includes(context.user.id)) {
+      const allowedUserMentions = commaSeparatedList(
+        allowedUserIds.map((id) => `<@${id}>`),
+        "or",
+      )
+
+      context.ephemeralReply(() => {
+        return `Sorry, only ${allowedUserMentions} can do that`
+      })
+
+      return
+    }
+
+    callback(context, ...args)
+  }
 }
