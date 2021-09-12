@@ -1,7 +1,7 @@
 import { createGatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config.js"
-import { rollCommand } from "./roll"
+import { rollCommand } from "./roll.js"
 
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS],

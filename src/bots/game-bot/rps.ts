@@ -1,7 +1,7 @@
 import { buttonComponent, defineUserCommand } from "@itsmapleleaf/gatekeeper"
 import { EmojiResolvable, User } from "discord.js"
 import { setTimeout } from "timers/promises"
-import { client } from "./main"
+import { client } from "./main.js"
 
 type Choice = typeof choices[number]
 const choices = ["rock", "paper", "scissors"] as const

@@ -1,8 +1,9 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "node-dev --no-notify src/main.ts",
-    "start": "ts-node src/main.ts"
+    "dev": "nodemon --exec node --loader=ts-node/esm/transpile-only --ext ts src/main.ts",
+    "start": "node --loader=ts-node/esm/transpile-only src/main.ts"
   },
   "dependencies": {
     "@itsmapleleaf/gatekeeper": "0.3.2",
@@ -11,9 +12,11 @@
   },
   "devDependencies": {
     "@types/node": "16.9.1",
+    "node-fetch": "3.0.0",
+    "nodemon": "2.0.12",
     "ts-node": "10.2.1",
-    "node-dev": "7.0.0",
-    "typescript": "4.4.3"
+    "typescript": "4.4.3",
+    "zod": "3.8.2"
   },
   "engines": {
     "node": "^16"

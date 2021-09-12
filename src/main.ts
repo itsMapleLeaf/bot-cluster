@@ -4,8 +4,8 @@ type Bot = {
 
 async function main() {
   const bots: Bot[] = await Promise.all([
-    import("./bots/rollbot/main"),
-    import("./bots/game-bot/main"),
+    import("./bots/rollbot/main.js"),
+    import("./bots/game-bot/main.js"),
   ])
 
   await Promise.all(bots.map((bot) => bot.run()))

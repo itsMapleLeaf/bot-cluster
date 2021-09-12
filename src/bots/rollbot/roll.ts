@@ -1,5 +1,5 @@
 import { buttonComponent, defineSlashCommand } from "@itsmapleleaf/gatekeeper"
-import { isPositiveInteger } from "./helpers"
+import { isPositiveInteger } from "./helpers.js"
 
 type RollResult = {
   input: string

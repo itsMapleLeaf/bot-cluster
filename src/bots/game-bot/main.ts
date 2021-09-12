@@ -1,7 +1,7 @@
 import { createGatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config"
-import { rpsCommand } from "./rps"
+import { rpsCommand } from "./rps.js"
 
 export const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
