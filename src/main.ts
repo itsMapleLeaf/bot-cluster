@@ -1,19 +1,12 @@
-type Bot = {
+type BotModule = {
   run: () => void
 }
 
-async function main() {
-  const bots: Bot[] = await Promise.all([
-    import("./bots/rollbot/main.js"),
-    import("./bots/game-bot/main.js"),
-  ])
+const bots: BotModule[] = await Promise.all([
+  import("./bots/rollbot/main.js"),
+  import("./bots/game-bot/main.js"),
+])
 
-  await Promise.all(bots.map((bot) => bot.run()))
-}
-
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+await Promise.all(bots.map((bot) => bot.run()))
 
 export {}

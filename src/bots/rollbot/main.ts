@@ -3,14 +3,16 @@ import { Client, Intents } from "discord.js"
 import "dotenv/config.js"
 import { rollCommand } from "./roll.js"
 
-const client = new Client({
-  intents: [Intents.FLAGS.GUILDS],
-})
+export async function run() {
+  const client = new Client({
+    intents: [Intents.FLAGS.GUILDS],
+  })
 
-const gatekeeper = createGatekeeper({ name: "rollbot", debug: true })
-gatekeeper.addCommand(rollCommand)
-gatekeeper.useClient(client)
+  await createGatekeeper({
+    name: "rollbot",
+    client,
+    commands: [rollCommand],
+  })
 
-export function run() {
-  return client.login(process.env.ROLLBOT_BOT_TOKEN)
+  await client.login(process.env.ROLLBOT_BOT_TOKEN)
 }

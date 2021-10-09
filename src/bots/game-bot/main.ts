@@ -8,11 +8,12 @@ export const client = new Client({
   intents: [Intents.FLAGS.GUILDS],
 })
 
-const gatekeeper = createGatekeeper({ name: "game-bot", debug: true })
-gatekeeper.addCommand(rpsCommand)
-gatekeeper.addCommand(triviaCommand)
-gatekeeper.useClient(client)
+export async function run() {
+  await createGatekeeper({
+    name: "game-bot",
+    client,
+    commands: [rpsCommand, triviaCommand],
+  })
 
-export function run() {
-  return client.login(process.env.RPS_BOT_TOKEN)
+  await client.login(process.env.RPS_BOT_TOKEN)
 }
