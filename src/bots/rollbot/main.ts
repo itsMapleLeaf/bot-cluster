@@ -1,4 +1,4 @@
-import { createGatekeeper } from "@itsmapleleaf/gatekeeper"
+import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config.js"
 import { rollCommand } from "./roll.js"
@@ -8,11 +8,12 @@ export async function run() {
     intents: [Intents.FLAGS.GUILDS],
   })
 
-  await createGatekeeper({
+  const gatekeeper = await Gatekeeper.create({
     name: "rollbot",
     client,
-    commands: [rollCommand],
   })
+
+  rollCommand(gatekeeper)
 
   await client.login(process.env.ROLLBOT_BOT_TOKEN)
 }

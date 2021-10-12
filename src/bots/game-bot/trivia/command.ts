@@ -1,79 +1,89 @@
 import {
   buttonComponent,
   ButtonInteractionContext,
-  defineSlashCommand,
+  Gatekeeper,
   InteractionContext,
   selectMenuComponent,
 } from "@itsmapleleaf/gatekeeper"
-import { fetchCategories, TriviaCategory } from "./api.js"
+import {
+  fetchCategories,
+  fetchQuestions,
+  TriviaCategory,
+  TriviaQuestion,
+} from "./api.js"
 import { commaSeparatedList } from "./commaSeparatedList.js"
 
-export const triviaCommand = defineSlashCommand({
-  name: "trivia",
-  description: "Start a trivia game",
-  async run(context) {
-    context.defer()
+export const triviaCommand = (gatekeeper: Gatekeeper) =>
+  gatekeeper.addSlashCommand({
+    name: "trivia",
+    description: "Start a trivia game",
+    async run(context) {
+      context.defer()
 
-    const categories = await fetchCategories()
-    const categoryIds = categories.map((category) => category.id).map(String)
+      const categories = await fetchCategories()
+      const categoryIds = categories.map((category) => category.id).map(String)
 
-    const admin = context.user
-    let state: "lobby" | "categorySelect" | "game" = "lobby"
-    let playerIds = new Set<string>([admin.id])
-    let selectedCategoryIds = categoryIds
+      const admin = context.user
+      let state: "lobby" | "categorySelect" | "fetchingQuestions" | "question" =
+        "lobby"
+      let playerIds = new Set<string>([admin.id])
+      let selectedCategoryId = randomItem(categoryIds)
+      let questions: TriviaQuestion[] = []
 
-    context.reply(() => {
-      switch (state) {
-        case "lobby": {
-          return lobbyComponent({
-            playerIds,
-            onJoin: (playerId) => {
-              playerIds.add(playerId)
-            },
-            onLeave: (playerId) => {
-              if (playerId === admin.id) {
-                return context.ephemeralReply(() => {
-                  return "You can't leave the game you started!"
+      const reply = context.reply(() => {
+        switch (state) {
+          case "lobby": {
+            return lobbyComponent({
+              playerIds,
+              onJoin: (playerId) => {
+                playerIds.add(playerId)
+              },
+              onLeave: (playerId) => {
+                if (playerId === admin.id) {
+                  return context.ephemeralReply(() => {
+                    return "You can't leave the game you started!"
+                  })
+                }
+                playerIds.delete(playerId)
+              },
+              onStart: withPermission([admin.id], () => {
+                state = "categorySelect"
+              }),
+            })
+          }
+
+          case "categorySelect": {
+            return categorySelectComponent({
+              categories,
+              selectedCategoryId,
+              onChange: withPermission([admin.id], (_, selected) => {
+                selectedCategoryId = selected
+              }),
+              onConfirm: withPermission([admin.id], async () => {
+                state = "fetchingQuestions"
+                questions = await fetchQuestions({
+                  categoryId: selectedCategoryId,
                 })
-              }
-              playerIds.delete(playerId)
-            },
-            onStart: withPermission([admin.id], () => {
-              state = "categorySelect"
-            }),
-          })
+
+                state = "question"
+                reply.refresh()
+              }),
+            })
+          }
+
+          case "fetchingQuestions": {
+            return "Fetching questions..."
+          }
+
+          case "question": {
+            return ["a"]
+          }
         }
 
-        case "categorySelect": {
-          return categorySelectComponent({
-            categories,
-            selectedCategoryIds,
-            onChange: withPermission([admin.id], (_, selected) => {
-              selectedCategoryIds = selected
-            }),
-            onConfirm: withPermission([admin.id], () => {
-              state = "game"
-            }),
-          })
-        }
-
-        case "game": {
-          return [
-            `players:`,
-            [...playerIds].map((id) => `<@${id}>`),
-            `selected categories`,
-            selectedCategoryIds
-              .map(Number)
-              .map((id) => categories.find((c) => c.id === id)?.name)
-              .filter(Boolean),
-          ]
-        }
-      }
-
-      return `lol wtf this shouldn't happen oops?`
-    })
-  },
-})
+        return `lol wtf this shouldn't happen oops?`
+      })
+    },
+  })
 
 function lobbyComponent({
   playerIds,
@@ -112,13 +122,16 @@ function lobbyComponent({
 
 function categorySelectComponent({
   categories,
-  selectedCategoryIds,
+  selectedCategoryId,
   onChange,
   onConfirm,
 }: {
   categories: TriviaCategory[]
-  selectedCategoryIds: string[]
-  onChange: (context: InteractionContext, selectedCategoryIds: string[]) => void
+  selectedCategoryId: string | undefined
+  onChange: (
+    context: InteractionContext,
+    selectedCategoryId: string | undefined,
+  ) => void
   onConfirm: (context: ButtonInteractionContext) => void
 }) {
   const categoryIds = categories.map((category) => category.id).map(String)
@@ -129,48 +142,34 @@ function categorySelectComponent({
         label: category.name,
         value: String(category.id),
       })),
-      selected: selectedCategoryIds,
-      minValues: 1,
+      selected: selectedCategoryId,
       onSelect: (context) => {
-        onChange(context, context.values)
+        if (context.values[0]) {
+          onChange(context, context.values[0])
+        }
       },
     }),
 
     buttonComponent({
-      label: "Select None",
-      style: "SECONDARY",
-      onClick: (context) => {
-        onChange(context, [])
-      },
-    }),
-
-    buttonComponent({
-      label: "Select All",
-      style: "SECONDARY",
-      onClick: (context) => {
-        onChange(context, categoryIds)
-      },
-    }),
-
-    buttonComponent({
-      label: "rAnDoMiZe",
+      label: "rAnDoM",
       emoji: "🎲",
       style: "SECONDARY",
       onClick: (context) => {
-        onChange(
-          context,
-          categoryIds.filter(() => Math.random() > 0.5),
-        )
+        onChange(context, randomItem(categoryIds))
       },
     }),
 
     buttonComponent({
       label: "Confirm",
       style: "PRIMARY",
-      disabled: !selectedCategoryIds.length,
+      disabled: !selectedCategoryId,
       onClick: onConfirm,
     }),
   ]
+}
+
+function randomItem<T>(array: T[]): T | undefined {
+  return array[Math.floor(Math.random() * array.length)]
 }
 
 function withPermission<

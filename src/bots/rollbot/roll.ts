@@ -1,4 +1,4 @@
-import { buttonComponent, defineSlashCommand } from "@itsmapleleaf/gatekeeper"
+import { buttonComponent, Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { isPositiveInteger } from "./helpers.js"
 
 type RollResult = {
@@ -38,57 +38,58 @@ function formatRollResults(results: RollResult[]) {
   )
 }
 
-export const rollCommand = defineSlashCommand({
-  name: "roll",
-  description: "rolls a dice",
-  options: {
-    dice: {
-      type: "STRING",
-      description: "dice to roll",
+export const rollCommand = (gatekeeper: Gatekeeper) =>
+  gatekeeper.addSlashCommand({
+    name: "roll",
+    description: "rolls a dice",
+    options: {
+      dice: {
+        type: "STRING",
+        description: "dice to roll",
+      },
     },
-  },
-  run(context) {
-    const diceString = context.options.dice || "1d6"
+    run(context) {
+      const diceString = context.options.dice || "1d6"
 
-    createRollReply(undefined)
+      createRollReply(undefined)
 
-    function createRollReply(rerollingUserId: string | undefined) {
-      const results = rollDice(diceString)
-      const allRolls = results.flatMap((result) => result.rolls)
+      function createRollReply(rerollingUserId: string | undefined) {
+        const results = rollDice(diceString)
+        const allRolls = results.flatMap((result) => result.rolls)
 
-      if (allRolls.length > maxDice) {
-        return context.ephemeralReply(
-          () => `You're rolling too many dice! (max ${maxDice})`,
-        )
+        if (allRolls.length > maxDice) {
+          return context.ephemeralReply(
+            () => `You're rolling too many dice! (max ${maxDice})`,
+          )
+        }
+
+        const total = allRolls.reduce((total, value) => total + value, 0)
+
+        const reply = context.reply(() => [
+          rerollingUserId && `(rerolled by <@${rerollingUserId}>)\n`,
+          formatRollResults(results),
+          allRolls.length > 1 && `**Total:** ${total}`,
+          buttonComponent({
+            label: "",
+            emoji: "🎲",
+            style: "PRIMARY",
+            onClick: (context) => createRollReply(context.user.id),
+          }),
+          buttonComponent({
+            label: "",
+            emoji: "❌",
+            style: "SECONDARY",
+            onClick: (event) => {
+              if (event.user.id === (rerollingUserId || context.user.id)) {
+                reply.delete()
+              } else {
+                event.ephemeralReply(
+                  () => `sorry, only the owner of the roll can delete this!`,
+                )
+              }
+            },
+          }),
+        ])
       }
-
-      const total = allRolls.reduce((total, value) => total + value, 0)
-
-      const reply = context.reply(() => [
-        rerollingUserId && `(rerolled by <@${rerollingUserId}>)\n`,
-        formatRollResults(results),
-        allRolls.length > 1 && `**Total:** ${total}`,
-        buttonComponent({
-          label: "",
-          emoji: "🎲",
-          style: "PRIMARY",
-          onClick: (context) => createRollReply(context.user.id),
-        }),
-        buttonComponent({
-          label: "",
-          emoji: "❌",
-          style: "SECONDARY",
-          onClick: (event) => {
-            if (event.user.id === (rerollingUserId || context.user.id)) {
-              reply.delete()
-            } else {
-              event.ephemeralReply(
-                () => `sorry, only the owner of the roll can delete this!`,
-              )
-            }
-          },
-        }),
-      ])
-    }
-  },
-})
+    },
+  })

@@ -1,4 +1,4 @@
-import { createGatekeeper } from "@itsmapleleaf/gatekeeper"
+import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
 import "dotenv/config"
 import { rpsCommand } from "./rps.js"
@@ -9,11 +9,13 @@ export const client = new Client({
 })
 
 export async function run() {
-  await createGatekeeper({
+  const gatekeeper = await Gatekeeper.create({
     name: "game-bot",
     client,
-    commands: [rpsCommand, triviaCommand],
   })
+
+  rpsCommand(gatekeeper)
+  triviaCommand(gatekeeper)
 
   await client.login(process.env.RPS_BOT_TOKEN)
 }

@@ -51,10 +51,21 @@ const categoryListResponseSchema = z
   })
   .passthrough()
 
-export async function fetchQuestions() {
-  return questionListResponseSchema.parse(
-    await fetchJson("https://opentdb.com/api.php?amount=5&encode=url3986"),
+export async function fetchQuestions({
+  categoryId,
+}: {
+  categoryId?: string
+}): Promise<TriviaQuestion[]> {
+  const query = new URLSearchParams()
+  query.set("amount", "10")
+  query.set("encode", "url3986")
+  if (categoryId) query.set("category", categoryId)
+
+  const response = questionListResponseSchema.parse(
+    await fetchJson(`https://opentdb.com/api.php?${query.toString()}`),
   )
+
+  return response.results
 }
 
 export async function fetchCategories() {
