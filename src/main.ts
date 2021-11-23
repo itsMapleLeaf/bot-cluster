@@ -5,8 +5,8 @@ type BotModule = {
 }
 
 const bots: BotModule[] = await Promise.all([
-  // import("./rollbot/main.js"),
-  // import("./game-bot/main.js"),
+  import("./rollbot/main.js"),
+  import("./game-bot/main.js"),
   import("./scout/main.js"),
 ])
 
