@@ -73,9 +73,14 @@ async function runCode(code: string) {
   const result = await execa(denoPath, ["eval", "--no-check", safeCode], {
     env: { NO_COLOR: "1" },
     reject: false,
+    timeout: 3000,
   })
 
-  if (result.exitCode !== 0) {
+  if (result.timedOut) {
+    return createResponse(randomItem(errorMessages), "Script took too long.")
+  }
+
+  if (result.failed || result.exitCode !== 0) {
     return createResponse(randomItem(errorMessages), result.stderr)
   }
 
