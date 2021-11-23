@@ -1,6 +1,8 @@
 import { Client, Intents, Message, PartialMessage } from "discord.js"
 import { execa } from "execa"
 
+const denoPath = process.env.DENO_PATH || "deno"
+
 const allowedUserIds = new Set(["91634403746275328", "109677308410875904"])
 
 const successMessages = [
@@ -50,11 +52,10 @@ async function handleMessage(message: Message | PartialMessage) {
     if (!code) return
 
     await message.reply(await runCode(code))
-  } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.stack || error.message : String(error)
-
+  } catch (error: any) {
+    const errorMessage = error?.stack || error?.message || String(error)
     await message.reply(createResponse(randomItem(errorMessages), errorMessage))
+    console.error(error)
   }
 }
 
@@ -69,7 +70,7 @@ async function runCode(code: string) {
     console.log(result)
   `
 
-  const result = await execa("deno", ["eval", "--no-check", safeCode], {
+  const result = await execa(denoPath, ["eval", "--no-check", safeCode], {
     env: { NO_COLOR: "1" },
     reject: false,
   })
