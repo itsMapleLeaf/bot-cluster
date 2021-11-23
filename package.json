@@ -9,8 +9,7 @@
     "@itsmapleleaf/gatekeeper": "^0.6.1",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
-    "execa": "^6.0.0",
-    "puppeteer": "^11.0.0"
+    "execa": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.9",
