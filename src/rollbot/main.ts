@@ -1,6 +1,5 @@
 import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
-import "dotenv/config.js"
 import { rollCommand } from "./roll.js"
 
 export async function run() {
