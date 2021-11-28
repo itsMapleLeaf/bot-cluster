@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --exec esmo --inspect=5858 src/main.ts",
-    "start": "esmo src/main.ts"
+    "start": "esmo src/main.ts",
+    "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts"
   },
   "dependencies": {
     "@itsmapleleaf/gatekeeper": "^0.6.1",
