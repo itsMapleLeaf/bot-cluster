@@ -2,22 +2,23 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec esmo --inspect=5858 src/main.ts",
+    "dev": "nodemon --exec esmo --no-warnings --inspect=5858 src/main.ts",
     "start": "esmo src/main.ts",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts"
   },
   "dependencies": {
-    "@itsmapleleaf/gatekeeper": "^0.6.1",
+    "@itsmapleleaf/gatekeeper": "^0.8.0",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
-    "execa": "^6.0.0"
+    "execa": "^6.0.0",
+    "googleapis": "^91.0.0",
+    "youtube.ts": "^0.2.2"
   },
   "devDependencies": {
-    "@types/node": "^16.11.9",
+    "@types/node": "^16.11.10",
     "esno": "^0.12.1",
     "node-fetch": "^3.1.0",
     "nodemon": "^2.0.15",
-    "ts-node": "^10.4.0",
     "typescript": "^4.5.2",
     "zod": "^3.11.6"
   },
