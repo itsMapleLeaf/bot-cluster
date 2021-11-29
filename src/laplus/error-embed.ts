@@ -32,4 +32,5 @@ const flavorText = [
   "It's not a bug, it's a feature. I swear.",
   "Linux moment? Linux moment.",
   'Maybe you should try playing "Can I Friend You on Bassbook? lol" by Camellia feat. Nanahira instead.',
+  "I hate JavaScript.",
 ]
