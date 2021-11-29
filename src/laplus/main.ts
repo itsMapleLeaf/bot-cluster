@@ -1,16 +1,20 @@
-import { embedComponent, Gatekeeper } from "@itsmapleleaf/gatekeeper"
-import { Client, Intents } from "discord.js"
-import { createRequire } from "module"
+import {
+  EmbedComponent,
+  embedComponent,
+  Gatekeeper,
+  InteractionContext,
+} from "@itsmapleleaf/gatekeeper"
+import { Client, Intents, VoiceChannel } from "discord.js"
+import { autorun } from "mobx"
 import { toError } from "../helpers.js"
-
-const require = createRequire(import.meta.url)
-const YouTube: typeof import("youtube.ts").default =
-  require("youtube.ts").default
-
-const youtube = new YouTube(process.env.GOOGLE_API_KEY)
+import { addSongToQueue, getState, joinVoiceChannel } from "./store.js"
 
 const client = new Client({
-  intents: [Intents.FLAGS.GUILDS],
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_VOICE_STATES,
+    Intents.FLAGS.GUILD_MEMBERS,
+  ],
 })
 
 export async function run() {
@@ -30,12 +34,23 @@ export async function run() {
       },
     },
     async run(context) {
-      try {
-        const video = await youtube.videos.get(context.options.url)
+      context.defer()
 
-        context.reply(() =>
-          codeBlock(JSON.stringify(video, null, 2).slice(0, 1900)),
+      const voiceChannel = context.member?.voice.channel
+      if (!(voiceChannel instanceof VoiceChannel)) {
+        return context.reply(
+          () => "You need to be in a voice channel to use this command. Baka.",
         )
+      }
+
+      if (!voiceChannel.joinable) {
+        return context.reply(() => "I can't join that voice channel. Baka.")
+      }
+
+      try {
+        joinVoiceChannel(voiceChannel)
+        addSongToQueue(context.options.url)
+        context.reply(() => "Done!")
       } catch (error) {
         context.reply(() =>
           embedComponent({
@@ -48,9 +63,43 @@ export async function run() {
     },
   })
 
+  gatekeeper.addSlashCommand({
+    name: "status",
+    description: "Get the status of the player",
+    async run(context) {
+      createStatusReply(context)
+    },
+  })
+
   await client.login(process.env.LAPLUS_TOKEN)
+}
+
+function createStatusReply(context: InteractionContext) {
+  let embed: EmbedComponent | undefined
+
+  const reply = context.reply(() => [embed || "..."])
+
+  autorun(() => {
+    const state = getState()
+    embed = embedComponent({
+      fields: [
+        { name: "status", value: state.status },
+        state.songQueue.length > 0 && {
+          name: "queue",
+          value: state.songQueue.map(({ youtubeUrl }) => youtubeUrl).join("\n"),
+        },
+      ].filter(isTruthy),
+    })
+    reply.refresh()
+  })
 }
 
 function codeBlock(code: string) {
   return ["```", code, "```"].join("\n")
+}
+
+type Falsy = false | undefined | null | "" | 0
+
+function isTruthy<T>(value: T | Falsy): value is T {
+  return Boolean(value)
 }
