@@ -1,4 +1,5 @@
-import { buttonComponent, Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import { buttonComponent } from "@itsmapleleaf/gatekeeper"
 import { isPositiveInteger } from "./helpers.js"
 
 type RollResult = {

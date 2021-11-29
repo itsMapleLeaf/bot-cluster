@@ -1,4 +1,5 @@
-import { Client, Intents, Message, PartialMessage } from "discord.js"
+import type { Message, PartialMessage } from "discord.js"
+import { Client, Intents } from "discord.js"
 import { execa } from "execa"
 
 const denoPath = process.env.DENO_PATH || "deno"

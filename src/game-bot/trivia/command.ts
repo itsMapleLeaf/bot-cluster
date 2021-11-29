@@ -1,16 +1,11 @@
-import {
-  buttonComponent,
+import type {
   ButtonInteractionContext,
   Gatekeeper,
   InteractionContext,
-  selectMenuComponent,
 } from "@itsmapleleaf/gatekeeper"
-import {
-  fetchCategories,
-  fetchQuestions,
-  TriviaCategory,
-  TriviaQuestion,
-} from "./api.js"
+import { buttonComponent, selectMenuComponent } from "@itsmapleleaf/gatekeeper"
+import type { TriviaCategory, TriviaQuestion } from "./api.js"
+import { fetchCategories, fetchQuestions } from "./api.js"
 import { commaSeparatedList } from "./commaSeparatedList.js"
 
 export const triviaCommand = (gatekeeper: Gatekeeper) =>
