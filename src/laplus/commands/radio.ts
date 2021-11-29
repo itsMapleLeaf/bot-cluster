@@ -37,9 +37,12 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           setTextChannel(context.channel)
         }
 
-        const song = await addSongToQueue(context.options.url, context.user.id)
+        const { song, relatedVideoCount } = await addSongToQueue(
+          context.options.url,
+          context.user.id,
+        )
         context.reply(() => [
-          "Added to queue. Radio mode work in progress.",
+          `Started a radio with ${relatedVideoCount} related videos.`,
           embedComponent(songDetailsEmbed(song)),
         ])
       } catch (error) {

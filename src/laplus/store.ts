@@ -8,6 +8,7 @@ import {
 import { TextBasedChannels, VoiceChannel } from "discord.js"
 import { autorun, observable } from "mobx"
 import prettyMs from "pretty-ms"
+import { relatedVideo } from "ytdl-core"
 import ytdl from "ytdl-core-discord"
 import { errorEmbedOptions } from "./error-embed.js"
 
@@ -19,7 +20,7 @@ type State = {
 export type Song = {
   readonly title: string
   readonly channelName: string
-  readonly channelUrl: string
+  readonly channelUrl?: string
   readonly channelAvatarUrl?: string
   readonly duration: string
   readonly thumbnailUrl?: string
@@ -94,11 +95,50 @@ export async function addSongToQueue(
     youtubeUrl,
     requesterUserId,
   }
-
   state.songQueue.push(song)
+
+  addRelatedSongs(info.related_videos, requesterUserId)
   checkQueue()
 
-  return song
+  return { song, relatedVideoCount: info.related_videos.length }
+}
+
+function addRelatedSongs(
+  relatedSongs: relatedVideo[],
+  requesterUserId: string,
+) {
+  for (const video of relatedSongs) {
+    const duration =
+      video.length_seconds == null
+        ? "unknown duration"
+        : prettyMs(video.length_seconds * 1000, { verbose: true })
+
+    const smallestThumbnail = smallestBy(
+      video.thumbnails,
+      (t) => t.width * t.height,
+    )
+
+    const channelProps =
+      typeof video.author === "string"
+        ? {
+            channelName: video.author,
+          }
+        : {
+            channelName: video.author.name,
+            channelUrl: video.author.channel_url,
+            channelAvatarUrl: video.author.thumbnails?.[0]?.url,
+          }
+
+    const relatedSong: Song = {
+      ...channelProps,
+      title: video.title ?? "unknown title",
+      duration,
+      thumbnailUrl: smallestThumbnail?.url,
+      youtubeUrl: `https://www.youtube.com/watch?v=${video.id}`,
+      requesterUserId,
+    }
+    state.songQueue.push(relatedSong)
+  }
 }
 
 export function setTextChannel(channel: TextBasedChannels) {
