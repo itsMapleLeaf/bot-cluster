@@ -37,14 +37,14 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           setTextChannel(context.channel)
         }
 
-        const { relatedVideoCount } = await addSongToQueue(
+        const result = await addSongToQueue(
           context.options.url,
           context.user.id,
         )
 
         createStatusReply(
           context,
-          `Started a radio with ${relatedVideoCount} related videos.`,
+          `Started a radio with ${result.relatedCount} related videos (${result.skippedCount} skipped)`,
         )
       } catch (error) {
         context.reply(() =>

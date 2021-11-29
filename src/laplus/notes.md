@@ -3,8 +3,8 @@
 - /radio (url)
   - [x] queue input url
   - [x] queue related
-  - [ ] if there's already a radio, add a confirmation message
   - [ ] skip songs over a certain length
+  - [ ] if there's already a radio, add a confirmation message
 - [x] /status
 - [ ] /skip (count=1)
 - [ ] /seek (seconds)

@@ -30,6 +30,8 @@ export type Song = {
 
 type PlayerStatus = { type: "idle" } | { type: "playing"; song: Song }
 
+const lengthLimitSeconds = 60 * 10
+
 const player = createAudioPlayer()
 
 const state = observable<State>({
@@ -109,10 +111,18 @@ export async function addSongToQueue(
   }
   state.songQueue.push(song)
 
-  addRelatedSongs(info.related_videos, requesterUserId)
+  const relatedVideos = info.related_videos.filter(
+    (video) => (video.length_seconds ?? Infinity) <= lengthLimitSeconds,
+  )
+
+  addRelatedSongs(relatedVideos, requesterUserId)
   checkQueue()
 
-  return { song, relatedVideoCount: info.related_videos.length }
+  return {
+    song,
+    relatedCount: relatedVideos.length,
+    skippedCount: info.related_videos.length - relatedVideos.length,
+  }
 }
 
 function addRelatedSongs(
