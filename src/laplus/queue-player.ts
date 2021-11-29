@@ -21,6 +21,12 @@ export function createQueuePlayer(
   // store the last song for error reporting
   let lastSong: Song | undefined
 
+  const handleError = (error: any, song: Song | undefined) => {
+    if (error?.message === "aborted") return
+    if (error?.constructor.name === "AbortError") return
+    onError(error, song)
+  }
+
   autorun(
     createEffect(() => {
       const song = (lastSong = queue.store.currentSong)
@@ -29,26 +35,27 @@ export function createQueuePlayer(
         return
       }
 
-      const controller = new AbortController()
+      let cancelled = false
 
       ytdl(song.youtubeUrl, {
         filter: "audioonly",
-        requestOptions: {
-          signal: controller.signal,
-        },
       }).then(
-        (stream) => player.play(createAudioResource(stream)),
-        (error) => onError(error, song),
+        (stream) => {
+          if (cancelled) return
+          stream.on("error", (error) => handleError(error, song))
+          player.play(createAudioResource(stream))
+        },
+        (error) => handleError(error, song),
       )
 
       return () => {
-        controller.abort()
+        cancelled = true
       }
     }),
   )
 
   player.on("error", (error) => {
-    onError(error, lastSong)
+    handleError(error, lastSong)
   })
 
   player.on(AudioPlayerStatus.Idle, () => {
