@@ -3,11 +3,17 @@ import {
   embedComponent,
   Gatekeeper,
   InteractionContext,
+  ReplyHandle,
 } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents, VoiceChannel } from "discord.js"
 import { autorun } from "mobx"
-import { toError } from "../helpers.js"
-import { addSongToQueue, getState, joinVoiceChannel } from "./store.js"
+import { errorEmbedOptions } from "./error-embed.js"
+import {
+  addSongToQueue,
+  getState,
+  joinVoiceChannel,
+  setTextChannel,
+} from "./store.js"
 
 const client = new Client({
   intents: [
@@ -38,26 +44,28 @@ export async function run() {
 
       const voiceChannel = context.member?.voice.channel
       if (!(voiceChannel instanceof VoiceChannel)) {
-        return context.reply(
-          () => "You need to be in a voice channel to use this command. Baka.",
-        )
+        context.reply(() => [
+          "You need to be in a voice channel to use this command. Baka.",
+        ])
+        return
       }
 
       if (!voiceChannel.joinable) {
-        return context.reply(() => "I can't join that voice channel. Baka.")
+        context.reply(() => "I can't join that voice channel. Baka.")
+        return
       }
 
       try {
-        joinVoiceChannel(voiceChannel)
-        addSongToQueue(context.options.url)
+        await addSongToQueue(context.options.url)
+
+        if (context.channel) {
+          joinVoiceChannel(voiceChannel)
+          setTextChannel(context.channel)
+        }
+
         context.reply(() => "Done!")
       } catch (error) {
-        context.reply(() =>
-          embedComponent({
-            description: toError(error).message,
-            color: "DARK_RED",
-          }),
-        )
+        context.reply(() => embedComponent(errorEmbedOptions(error)))
         console.error((error as any)?.response?.data?.error || error)
       }
     },
@@ -76,11 +84,11 @@ export async function run() {
 
 function createStatusReply(context: InteractionContext) {
   let embed: EmbedComponent | undefined
-
-  const reply = context.reply(() => [embed || "..."])
+  let reply: ReplyHandle | undefined
 
   autorun(() => {
     const state = getState()
+
     embed = embedComponent({
       fields: [
         { name: "status", value: state.status },
@@ -90,7 +98,12 @@ function createStatusReply(context: InteractionContext) {
         },
       ].filter(isTruthy),
     })
-    reply.refresh()
+
+    if (reply) {
+      reply.refresh()
+    } else {
+      reply = context.reply(() => embed)
+    }
   })
 }
 

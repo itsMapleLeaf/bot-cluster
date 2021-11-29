@@ -5,9 +5,10 @@ import {
   getVoiceConnection,
   joinVoiceChannel as createVoiceConnection,
 } from "@discordjs/voice"
-import { VoiceChannel } from "discord.js"
+import { TextBasedChannels, VoiceChannel } from "discord.js"
 import { observable } from "mobx"
 import ytdl from "ytdl-core-discord"
+import { errorEmbedOptions } from "./error-embed.js"
 
 type State = {
   readonly songQueue: Song[]
@@ -25,7 +26,16 @@ const state = observable<State>({
   status: "idle",
 })
 
-function checkQueue() {
+let textChannel: TextBasedChannels | undefined
+
+player.on(AudioPlayerStatus.Idle, () => {
+  state.status = "idle"
+  checkQueue().catch((error) => {
+    textChannel?.send({ embeds: [errorEmbedOptions(error)] })
+  })
+})
+
+async function checkQueue() {
   if (state.status !== "idle") return
   if (state.songQueue.length === 0) return
 
@@ -34,20 +44,19 @@ function checkQueue() {
 
   state.status = "loading"
 
-  ytdl(song.youtubeUrl, { filter: "audioonly" }).then((stream) => {
-    player.play(createAudioResource(stream))
-    state.status = "playing"
-  }, console.error)
+  const stream = await ytdl(song.youtubeUrl, { filter: "audioonly" })
+
+  player.play(createAudioResource(stream))
+  state.status = "playing"
 }
 
-player.on(AudioPlayerStatus.Idle, () => {
-  state.status = "idle"
-  checkQueue()
-})
-
-export function addSongToQueue(youtubeVideoUrl: string) {
+export async function addSongToQueue(youtubeVideoUrl: string) {
   state.songQueue.push({ youtubeUrl: youtubeVideoUrl })
-  checkQueue()
+  await checkQueue()
+}
+
+export function setTextChannel(channel: TextBasedChannels) {
+  textChannel = channel
 }
 
 export function joinVoiceChannel(voiceChannel: VoiceChannel) {
