@@ -35,8 +35,9 @@
 
 ## status enhancements
 
-- [x] current playing time
-- [ ] current playing time as loading bar
+- [ ] current playing time
+- [x] current playing time as loading bar
+- [ ] instead of total songs, show count for non-visible songs (`Math.max(total - 5, 0)`, hidden if 0)
 - [ ] show total length in footer
 - [ ] arrows to navigate pages
 - [ ] close button
