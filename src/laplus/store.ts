@@ -39,6 +39,8 @@ const state = observable<State>({
 
 let textChannel: TextBasedChannels | undefined
 
+player.on("error", logError)
+
 player.on(AudioPlayerStatus.Idle, () => {
   state.status = { type: "idle" }
   checkQueue()
@@ -47,17 +49,18 @@ player.on(AudioPlayerStatus.Idle, () => {
 autorun(() => {
   const { status } = state
   if (status.type === "playing") {
-    ytdl(status.song.youtubeUrl, { filter: "audioonly" }).then(
-      (stream) => {
-        player.play(createAudioResource(stream))
-      },
-      (error) => {
-        console.error(error)
-        textChannel?.send({ embeds: [errorEmbedOptions(error)] })
-      },
-    )
+    ytdl(status.song.youtubeUrl, { filter: "audioonly" }).then((stream) => {
+      const resource = createAudioResource(stream)
+      player.play(resource)
+      resource.playStream.on("error", logError)
+    }, logError)
   }
 })
+
+function logError(error: unknown) {
+  console.error(error)
+  textChannel?.send({ embeds: [errorEmbedOptions(error)] })
+}
 
 function checkQueue() {
   if (state.status.type !== "idle") return
