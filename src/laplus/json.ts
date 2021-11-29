@@ -1,4 +1,4 @@
-import { JsonValue } from "type-fest"
+import type { JsonValue } from "type-fest"
 
 export function safeJsonParse(json: string): JsonValue | undefined {
   try {

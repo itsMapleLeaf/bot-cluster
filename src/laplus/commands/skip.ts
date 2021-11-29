@@ -1,5 +1,5 @@
-import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
-import { skip } from "../store.js"
+import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import { queue } from "../singletons.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
@@ -18,14 +18,14 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         return
       }
 
-      const result = skip(count)
-      if (!result) {
+      const { skippedSong } = queue.skip(count)
+      if (!skippedSong) {
         context.reply(() => "Can't skip, baka.")
         return
       }
 
       const otherSkippedCount = count > 1 ? ` (and ${count - 1} others)` : ""
-      context.reply(() => `Skipped "${result.song.title}"${otherSkippedCount}.`)
+      context.reply(() => `Skipped "${skippedSong.title}"${otherSkippedCount}.`)
     },
   })
 }

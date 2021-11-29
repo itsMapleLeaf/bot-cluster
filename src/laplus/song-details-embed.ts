@@ -1,5 +1,5 @@
-import { MessageEmbedOptions } from "discord.js"
-import { Song } from "./store.js"
+import type { MessageEmbedOptions } from "discord.js"
+import type { Song } from "./song.js"
 
 const progressWidth = 16
 
@@ -8,8 +8,6 @@ export function songDetailsEmbed(
   progress: number,
 ): MessageEmbedOptions {
   const progressFilledCount = Math.floor(progress * progressWidth)
-
-  console.log({ progress, progressFilledCount })
 
   const progressBar =
     "🟪".repeat(progressFilledCount) +

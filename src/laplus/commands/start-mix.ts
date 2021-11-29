@@ -1,13 +1,15 @@
-import { embedComponent, Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { VoiceChannel } from "discord.js"
 import { errorEmbedOptions } from "../error-embed.js"
+import { queue, queuePlayer, textChannelPresence } from "../singletons.js"
 import { createStatusReply } from "../status.js"
-import { addSongToQueue, joinVoiceChannel, setTextChannel } from "../store.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
-    name: "radio",
-    description: "Start a radio using YouTube related videos",
+    name: "start-mix",
+    aliases: ["mix", "play"],
+    description: "Start a mix using YouTube related videos",
     options: {
       url: {
         type: "STRING",
@@ -32,12 +34,13 @@ export default function addCommands(gatekeeper: Gatekeeper) {
       }
 
       try {
-        joinVoiceChannel(voiceChannel)
+        queuePlayer.joinVoiceChannel(voiceChannel)
+
         if (context.channel) {
-          setTextChannel(context.channel)
+          textChannelPresence.setTextChannel(context.channel)
         }
 
-        const result = await addSongToQueue(
+        const result = await queue.queueWithRelated(
           context.options.url,
           context.user.id,
         )

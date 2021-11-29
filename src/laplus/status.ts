@@ -1,12 +1,9 @@
-import {
-  embedComponent,
-  InteractionContext,
-  ReplyHandle,
-} from "@itsmapleleaf/gatekeeper"
+import type { InteractionContext, ReplyHandle } from "@itsmapleleaf/gatekeeper"
+import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { observerReply } from "./observer-reply.js"
 import { queueEmbed } from "./queue-embed.js"
+import { queue } from "./singletons.js"
 import { songDetailsEmbed } from "./song-details-embed.js"
-import { getState } from "./store.js"
 
 let currentId: NodeJS.Timer | undefined
 let reply: ReplyHandle
@@ -16,21 +13,21 @@ export function createStatusReply(context: InteractionContext, header = "") {
   reply?.delete()
 
   reply = observerReply(context, () => {
-    const { status, songQueue } = getState()
+    const { state, songs } = queue.store
 
-    if (status.type === "idle") {
+    if (state.status === "idle") {
       return "Nothing's playing at the moment."
     }
 
-    const progress =
-      (Date.now() / 1000 - status.startTimeSeconds) /
-      status.song.durationSeconds
+    const progress = 0.5
+    // (Date.now() / 1000 - state.startTimeSeconds) /
+    // state.song.durationSeconds
 
     return [
       header,
-      embedComponent(songDetailsEmbed(status.song, progress)),
+      embedComponent(songDetailsEmbed(state.song, progress)),
       embedComponent(
-        queueEmbed(songQueue, (1 - progress) * status.song.durationSeconds),
+        queueEmbed(songs, (1 - progress) * state.song.durationSeconds),
       ),
     ]
   })

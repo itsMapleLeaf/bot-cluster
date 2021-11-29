@@ -1,6 +1,6 @@
-import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { VoiceChannel } from "discord.js"
-import { joinVoiceChannel } from "../store.js"
+import { queuePlayer } from "../singletons.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
@@ -22,7 +22,7 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         return
       }
 
-      joinVoiceChannel(voiceChannel)
+      queuePlayer.joinVoiceChannel(voiceChannel)
       context.reply(() => "Here I am.")
     },
   })

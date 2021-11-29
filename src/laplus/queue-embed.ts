@@ -1,6 +1,6 @@
-import { MessageEmbedOptions } from "discord.js"
+import type { MessageEmbedOptions } from "discord.js"
 import prettyMilliseconds from "pretty-ms"
-import { Song } from "./store.js"
+import type { Song } from "./song.js"
 
 export function queueEmbed(
   songs: Song[],
