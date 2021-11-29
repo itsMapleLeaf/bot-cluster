@@ -7,7 +7,7 @@ export function songDetailsEmbed(
   song: Song,
   progress: number,
 ): MessageEmbedOptions {
-  const progressFilledCount = Math.floor(progress * progressWidth)
+  const progressFilledCount = Math.round(progress * progressWidth)
 
   const progressBar =
     "🟪".repeat(progressFilledCount) +
