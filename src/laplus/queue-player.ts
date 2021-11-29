@@ -17,6 +17,7 @@ export function createQueuePlayer(
   onError: (error: unknown, song: Song | undefined) => void,
 ) {
   const player = createAudioPlayer()
+  let progressSeconds = 0
 
   // store the last song for error reporting
   let lastSong: Song | undefined
@@ -29,6 +30,8 @@ export function createQueuePlayer(
 
   autorun(
     createEffect(() => {
+      progressSeconds = 0
+
       const song = (lastSong = queue.store.currentSong)
       if (!song) {
         player.stop()
@@ -62,6 +65,12 @@ export function createQueuePlayer(
     queue.advance()
   })
 
+  setInterval(() => {
+    if (player.state.status === AudioPlayerStatus.Playing) {
+      progressSeconds += 1
+    }
+  }, 1000)
+
   function joinVoiceChannel(voiceChannel: VoiceChannel) {
     const connection = getVoiceConnection(voiceChannel.guild.id)
     if (!connection || connection.joinConfig.channelId !== voiceChannel.id) {
@@ -74,6 +83,9 @@ export function createQueuePlayer(
   }
 
   return {
+    get progressSeconds() {
+      return progressSeconds
+    },
     joinVoiceChannel,
   }
 }
