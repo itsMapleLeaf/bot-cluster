@@ -1,7 +1,7 @@
 import { embedComponent, Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { VoiceChannel } from "discord.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { songDetailsEmbed } from "../song-details-embed.js"
+import { createStatusReply } from "../status.js"
 import { addSongToQueue, joinVoiceChannel, setTextChannel } from "../store.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
@@ -37,14 +37,15 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           setTextChannel(context.channel)
         }
 
-        const { song, relatedVideoCount } = await addSongToQueue(
+        const { relatedVideoCount } = await addSongToQueue(
           context.options.url,
           context.user.id,
         )
-        context.reply(() => [
+
+        createStatusReply(
+          context,
           `Started a radio with ${relatedVideoCount} related videos.`,
-          embedComponent(songDetailsEmbed(song)),
-        ])
+        )
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         console.error((error as any)?.response?.data?.error || error)
