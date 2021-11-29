@@ -1,11 +1,22 @@
 import { MessageEmbedOptions } from "discord.js"
 import { Song } from "./store.js"
 
-export function songDetailsEmbed(song: Song): MessageEmbedOptions {
+const progressWidth = 16
+
+export function songDetailsEmbed(
+  song: Song,
+  progress: number,
+): MessageEmbedOptions {
+  const progressFilledCount = Math.floor(progress * progressWidth)
+
+  const progressBar =
+    "🟪".repeat(progressFilledCount) +
+    "⬛".repeat(progressWidth - progressFilledCount)
+
   return {
     title: song.title,
     url: song.youtubeUrl,
-    description: `${song.duration} ∙ <@!${song.requesterUserId}>`,
+    description: `<@!${song.requesterUserId}> ∙ ${song.duration}\n\n${progressBar}`,
     author: {
       name: song.channelName,
       iconURL: song.channelAvatarUrl,
@@ -15,5 +26,9 @@ export function songDetailsEmbed(song: Song): MessageEmbedOptions {
     thumbnail: {
       url: song.thumbnailUrl,
     },
+    // using a very wide 1px tall image for a consistent width
+    // image: {
+    //   url: `https://cdn.discordapp.com/attachments/855734996424458250/882782767442710578/Invisible_embed.png`,
+    // },
   }
 }

@@ -23,12 +23,15 @@ export type Song = {
   readonly channelUrl?: string
   readonly channelAvatarUrl?: string
   readonly duration: string
+  readonly durationSeconds: number
   readonly thumbnailUrl?: string
   readonly youtubeUrl: string
   readonly requesterUserId: string
 }
 
-type PlayerStatus = { type: "idle" } | { type: "playing"; song: Song }
+type PlayerStatus =
+  | { type: "idle" }
+  | { type: "playing"; song: Song; startTimeSeconds: number }
 
 const lengthLimitSeconds = 60 * 10
 
@@ -80,7 +83,11 @@ function checkQueue() {
   const song = state.songQueue.shift()
   if (!song) return
 
-  state.status = { type: "playing", song }
+  state.status = {
+    type: "playing",
+    song,
+    startTimeSeconds: Date.now() / 1000,
+  }
 }
 
 export async function addSongToQueue(
@@ -101,6 +108,7 @@ export async function addSongToQueue(
 
   const song: Song = {
     title: info.videoDetails.title,
+    durationSeconds,
     duration: durationFormatted,
     thumbnailUrl: smallestThumbnail?.url,
     channelName: info.videoDetails.author.name,
@@ -155,6 +163,7 @@ function addRelatedSongs(
       ...channelProps,
       title: video.title ?? "unknown title",
       duration,
+      durationSeconds: video.length_seconds ?? 1,
       thumbnailUrl: smallestThumbnail?.url,
       youtubeUrl: `https://www.youtube.com/watch?v=${video.id}`,
       requesterUserId,

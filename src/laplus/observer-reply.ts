@@ -23,6 +23,13 @@ export function observerReply(
   })
 
   return {
+    get message() {
+      return reply?.message
+    },
+    refresh: () => {
+      content = renderFn()
+      reply?.refresh()
+    },
     delete: () => {
       reply?.delete()
       cleanup()

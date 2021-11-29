@@ -17,6 +17,7 @@
   - [ ] paginate this
   - [ ] consider an autocomplete option when that comes out
 - [ ] /clear
+- [ ] /search (or just make /radio do a search on an invalid url)
 
 ## internal
 
@@ -30,6 +31,6 @@
 
 ## status enhancements
 
-- [ ] current playing time, maybe in a fun loading bar type thing
-- [ ] arrows to navigate
+- [x] current playing time, maybe in a fun loading bar type thing
+- [ ] arrows to navigate pages
 - [ ] close button
