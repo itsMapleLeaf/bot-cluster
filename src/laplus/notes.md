@@ -26,12 +26,17 @@
 ## features
 
 - [ ] get more related videos when queue ends
-- [ ] persistence via github gist
+- persist player state via github gist
+  - [x] current playing song
+  - [x] queue
+  - [ ] song position
+  - [ ] voice channel - re-join the channel on startup
 - [ ] role-based permissions
 
 ## status enhancements
 
-- [x] current playing time, maybe in a fun loading bar type thing
+- [x] current playing time
+- [ ] current playing time as loading bar
 - [ ] show total length in footer
 - [ ] arrows to navigate pages
 - [ ] close button

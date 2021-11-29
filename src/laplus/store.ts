@@ -6,43 +6,72 @@ import {
   joinVoiceChannel as createVoiceConnection,
 } from "@discordjs/voice"
 import { TextBasedChannels, VoiceChannel } from "discord.js"
-import { autorun, observable } from "mobx"
+import { autorun, observable, toJS } from "mobx"
 import prettyMs from "pretty-ms"
 import { relatedVideo } from "ytdl-core"
 import ytdl from "ytdl-core-discord"
+import { z } from "zod"
 import { errorEmbedOptions } from "./error-embed.js"
+import { loadGistContent, saveGistContent } from "./gist.js"
+import { safeJsonParse } from "./json.js"
 
-type State = {
-  songQueue: Song[]
-  status: PlayerStatus
+const songSchema = z.object({
+  title: z.string(),
+  channelName: z.string(),
+  channelUrl: z.string().optional(),
+  channelAvatarUrl: z.string().optional(),
+  duration: z.string(),
+  durationSeconds: z.number(),
+  thumbnailUrl: z.string().optional(),
+  youtubeUrl: z.string(),
+  requesterUserId: z.string(),
+})
+export type Song = z.infer<typeof songSchema>
+
+const playerStatusSchema = z.union([
+  z.object({ type: z.literal("idle") }),
+  z.object({
+    type: z.literal("playing"),
+    song: songSchema,
+    startTimeSeconds: z.number(),
+  }),
+])
+type PlayerStatus = z.infer<typeof playerStatusSchema>
+
+const playerStateSchema = z.object({
+  songQueue: z.array(songSchema),
+  status: playerStatusSchema,
+})
+type PlayerState = z.infer<typeof playerStateSchema>
+
+const savedPlayerStateSchema = z.object({
+  state: playerStateSchema,
+  savedTimeSeconds: z.number(),
+})
+type SavedPlayerState = z.infer<typeof savedPlayerStateSchema>
+
+const savedState = savedPlayerStateSchema.safeParse(
+  safeJsonParse(await loadGistContent()),
+)
+if (!savedState.success) {
+  console.warn(savedState.error.format())
 }
 
-export type Song = {
-  readonly title: string
-  readonly channelName: string
-  readonly channelUrl?: string
-  readonly channelAvatarUrl?: string
-  readonly duration: string
-  readonly durationSeconds: number
-  readonly thumbnailUrl?: string
-  readonly youtubeUrl: string
-  readonly requesterUserId: string
+const defaultState: PlayerState = {
+  songQueue: [],
+  status: { type: "idle" },
 }
-
-type PlayerStatus =
-  | { type: "idle" }
-  | { type: "playing"; song: Song; startTimeSeconds: number }
-
-const lengthLimitSeconds = 60 * 10
 
 const player = createAudioPlayer()
 
-const state = observable<State>({
-  songQueue: [],
-  status: { type: "idle" },
-})
+const state = observable(
+  savedState.success ? savedState.data.state : defaultState,
+)
 
+const lengthLimitSeconds = 60 * 10
 let textChannel: TextBasedChannels | undefined
+
+checkQueue()
 
 player.on(AudioPlayerStatus.Idle, () => {
   state.status = { type: "idle" }
@@ -62,6 +91,20 @@ autorun(() => {
     )
   }
 })
+
+setInterval(async () => {
+  try {
+    const savedState: SavedPlayerState = {
+      state: toJS(state),
+      savedTimeSeconds: Date.now() / 1000,
+    }
+
+    await saveGistContent(JSON.stringify(savedState, null, 2))
+  } catch (error) {
+    console.warn("Failed to save state")
+    console.warn(error)
+  }
+}, 30000)
 
 player.on("error", (error) => {
   const url =
@@ -207,7 +250,7 @@ export function clear() {
   checkQueue()
 }
 
-export function getState(): Readonly<State> {
+export function getState(): Readonly<PlayerState> {
   return state
 }
 
