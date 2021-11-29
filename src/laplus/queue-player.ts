@@ -73,7 +73,7 @@ export function createQueuePlayer(
 
   function joinVoiceChannel(voiceChannel: VoiceChannel) {
     const connection = getVoiceConnection(voiceChannel.guild.id)
-    if (!connection || connection.joinConfig.channelId !== voiceChannel.id) {
+    if (connection?.joinConfig.channelId !== voiceChannel.id) {
       createVoiceConnection({
         channelId: voiceChannel.id,
         guildId: voiceChannel.guild.id,
