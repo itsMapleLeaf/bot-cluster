@@ -7,7 +7,7 @@
   - [ ] if there's already a radio, add a confirmation message
 - [x] /status
 - [x] /skip (count=1)
-- [ ] /clear
+- [x] /clear
 - [ ] /add (url) (position?)
 - [ ] /pause and /resume
 - [ ] /seek (seconds)

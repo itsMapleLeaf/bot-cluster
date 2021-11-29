@@ -13,7 +13,7 @@ import ytdl from "ytdl-core-discord"
 import { errorEmbedOptions } from "./error-embed.js"
 
 type State = {
-  readonly songQueue: Song[]
+  songQueue: Song[]
   status: PlayerStatus
 }
 
@@ -199,6 +199,12 @@ export function skip(count: number) {
   state.songQueue.splice(0, count - 1)
   checkQueue()
   return { song }
+}
+
+export function clear() {
+  state.songQueue = []
+  state.status = { type: "idle" }
+  checkQueue()
 }
 
 export function getState(): Readonly<State> {
