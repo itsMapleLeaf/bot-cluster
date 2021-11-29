@@ -1,16 +1,14 @@
 import type { RequestInit } from "node-fetch"
 import fetch from "node-fetch"
 import type { JsonValue } from "type-fest"
-import { raise } from "../helpers.js"
 
 // requires that the gist is already created lol
 export function createJsonGist(gistId: string, fileName: string) {
   return {
     async load(): Promise<JsonValue> {
-      const response = await githubFetch(
+      const data: any = await githubFetch(
         `https://api.github.com/gists/${gistId}`,
       )
-      const data: any = await response.json()
 
       const content = data?.files?.[fileName]?.content
       if (!content) {
@@ -24,11 +22,7 @@ export function createJsonGist(gistId: string, fileName: string) {
       await githubFetch(`https://api.github.com/gists/${gistId}`, {
         method: "PATCH",
         body: {
-          files: {
-            [fileName]: {
-              content: JSON.stringify(data, null, 2),
-            },
-          },
+          files: { [fileName]: { content: JSON.stringify(data, null, 2) } },
         },
       })
     },
@@ -58,7 +52,8 @@ async function githubFetch(
   }
 
   const response = await fetch(url, init)
-  return response.ok
-    ? response
-    : raise(`${response.status} ${response.statusText}`)
+  if (!response.ok) {
+    throw new Error(`${response.status} ${response.statusText}`)
+  }
+  return response.json()
 }
