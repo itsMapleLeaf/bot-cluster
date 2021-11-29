@@ -1,4 +1,5 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
+import { Util } from "discord.js"
 import { queue } from "../singletons.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
@@ -24,8 +25,11 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         return
       }
 
-      const otherSkippedCount = count > 1 ? ` (and ${count - 1} others)` : ""
-      context.reply(() => `Skipped "${skippedSong.title}"${otherSkippedCount}.`)
+      context.reply(
+        () =>
+          `Skipped _${Util.escapeMarkdown(skippedSong.title)}_` +
+          (count > 1 ? ` (and ${count - 1} others)` : ""),
+      )
     },
   })
 }
