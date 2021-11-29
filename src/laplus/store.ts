@@ -6,62 +6,99 @@ import {
   joinVoiceChannel as createVoiceConnection,
 } from "@discordjs/voice"
 import { TextBasedChannels, VoiceChannel } from "discord.js"
-import { observable } from "mobx"
+import { autorun, observable } from "mobx"
+import prettyMs from "pretty-ms"
 import ytdl from "ytdl-core-discord"
 import { errorEmbedOptions } from "./error-embed.js"
 
 type State = {
   readonly songQueue: Song[]
-  status: "idle" | "loading" | "playing"
+  status: PlayerStatus
 }
 
-type Song = {
+export type Song = {
+  readonly title: string
+  readonly channelName: string
+  readonly channelUrl: string
+  readonly channelAvatarUrl?: string
+  readonly duration: string
+  readonly thumbnailUrl?: string
   readonly youtubeUrl: string
+  readonly requesterUserId: string
 }
+
+type PlayerStatus = { type: "idle" } | { type: "playing"; song: Song }
 
 const player = createAudioPlayer()
 
 const state = observable<State>({
   songQueue: [],
-  status: "idle",
+  status: { type: "idle" },
 })
 
 let textChannel: TextBasedChannels | undefined
 
 player.on(AudioPlayerStatus.Idle, () => {
-  state.status = "idle"
-  checkQueue().catch((error) => {
-    textChannel?.send({ embeds: [errorEmbedOptions(error)] })
-  })
+  state.status = { type: "idle" }
+  checkQueue()
 })
 
-async function checkQueue() {
-  if (state.status !== "idle") return
+autorun(() => {
+  const { status } = state
+  if (status.type === "playing") {
+    ytdl(status.song.youtubeUrl, { filter: "audioonly" }).then(
+      (stream) => {
+        player.play(createAudioResource(stream))
+      },
+      (error) => {
+        console.error(error)
+        textChannel?.send({ embeds: [errorEmbedOptions(error)] })
+      },
+    )
+  }
+})
+
+function checkQueue() {
+  if (state.status.type !== "idle") return
   if (state.songQueue.length === 0) return
 
   const song = state.songQueue.shift()
   if (!song) return
 
-  state.status = "loading"
-
-  try {
-    const stream = await ytdl(song.youtubeUrl, { filter: "audioonly" })
-    player.play(createAudioResource(stream))
-    state.status = "playing"
-  } catch (error) {
-    state.status = "idle"
-
-    checkQueue().catch((error) => {
-      textChannel?.send({ embeds: [errorEmbedOptions(error)] })
-    })
-
-    throw error
-  }
+  state.status = { type: "playing", song }
 }
 
-export async function addSongToQueue(youtubeVideoUrl: string) {
-  state.songQueue.push({ youtubeUrl: youtubeVideoUrl })
-  await checkQueue()
+export async function addSongToQueue(
+  youtubeUrl: string,
+  requesterUserId: string,
+) {
+  const info = await ytdl.getInfo(youtubeUrl)
+
+  const durationSeconds = Number(info.videoDetails.lengthSeconds)
+  const durationFormatted = Number.isFinite(durationSeconds)
+    ? prettyMs(durationSeconds * 1000, { verbose: true })
+    : "unknown duration"
+
+  const smallestThumbnail = smallestBy(
+    info.videoDetails.thumbnails,
+    (t) => t.width * t.height,
+  )
+
+  const song: Song = {
+    title: info.videoDetails.title,
+    duration: durationFormatted,
+    thumbnailUrl: smallestThumbnail?.url,
+    channelName: info.videoDetails.author.name,
+    channelUrl: info.videoDetails.author.channel_url,
+    channelAvatarUrl: info.videoDetails.author.thumbnails?.[0]?.url,
+    youtubeUrl,
+    requesterUserId,
+  }
+
+  state.songQueue.push(song)
+  checkQueue()
+
+  return song
 }
 
 export function setTextChannel(channel: TextBasedChannels) {
@@ -81,4 +118,15 @@ export function joinVoiceChannel(voiceChannel: VoiceChannel) {
 
 export function getState(): Readonly<State> {
   return state
+}
+
+function smallestBy<T>(
+  array: T[],
+  getComparator: (item: T) => number,
+): T | undefined {
+  if (array.length === 0) return undefined
+  return array.reduce((smallest, current) => {
+    if (getComparator(current) < getComparator(smallest)) return current
+    return smallest
+  })
 }
