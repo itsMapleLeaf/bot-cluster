@@ -20,7 +20,7 @@
 
 ## internal
 
-- [ ] on errors, show the related song that couldn't load
+- [x] on errors, show the related url that couldn't load
 
 ## features
 

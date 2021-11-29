@@ -47,7 +47,10 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           `Started a radio with ${relatedVideoCount} related videos.`,
         )
       } catch (error) {
-        context.reply(() => embedComponent(errorEmbedOptions(error)))
+        context.reply(() =>
+          embedComponent(errorEmbedOptions(error, context.options.url)),
+        )
+        console.error("url:", context.options.url)
         console.error((error as any)?.response?.data?.error || error)
       }
     },
