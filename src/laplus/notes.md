@@ -1,10 +1,10 @@
 ## commands
 
-- /radio (url)
+- /mix (url)
   - [x] queue input url
   - [x] queue related
   - [x] skip songs over a certain length
-  - [ ] if there's already a radio, add a confirmation message
+  - [ ] if there's already a mix, add a confirmation message
 - [x] /status
 - [x] /skip (count=1)
 - [x] /clear
@@ -17,7 +17,7 @@
   - [ ] remove all unchecked songs (keep checked songs)
   - [ ] paginate this
   - [ ] consider an autocomplete option when that comes out
-- [ ] /search (or just make /radio do a search on an invalid url)
+- [ ] /search (or just make /mix do a search on an invalid url)
 
 ## internal
 

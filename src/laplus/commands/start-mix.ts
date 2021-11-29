@@ -47,7 +47,7 @@ export default function addCommands(gatekeeper: Gatekeeper) {
 
         createStatusReply(
           context,
-          `Started a radio with ${result.relatedCount} related videos (${result.skippedCount} skipped)`,
+          `Started a mix with ${result.relatedCount} related videos (${result.skippedCount} skipped)`,
         )
       } catch (error) {
         context.reply(() =>
