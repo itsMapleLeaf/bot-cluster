@@ -68,6 +68,13 @@ const state = observable(
   savedState.success ? savedState.data.state : defaultState,
 )
 
+if (state.status.type === "playing") {
+  state.status = {
+    ...state.status,
+    startTimeSeconds: Date.now() / 1000,
+  }
+}
+
 const lengthLimitSeconds = 60 * 10
 let textChannel: TextBasedChannels | undefined
 
