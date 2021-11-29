@@ -78,7 +78,12 @@ function logError(error: unknown, url?: string) {
 
 function checkQueue() {
   if (state.status.type !== "idle") return
-  if (state.songQueue.length === 0) return
+
+  // we should be idle, and the queue is empty, so the player should stop
+  if (state.songQueue.length === 0) {
+    player.stop()
+    return
+  }
 
   const song = state.songQueue.shift()
   if (!song) return
@@ -185,6 +190,15 @@ export function joinVoiceChannel(voiceChannel: VoiceChannel) {
       adapterCreator: voiceChannel.guild.voiceAdapterCreator,
     }).subscribe(player)
   }
+}
+
+export function skip(count: number) {
+  if (state.status.type === "idle") return
+  const { song } = state.status
+  state.status = { type: "idle" }
+  state.songQueue.splice(0, count - 1)
+  checkQueue()
+  return { song }
 }
 
 export function getState(): Readonly<State> {

@@ -3,20 +3,20 @@
 - /radio (url)
   - [x] queue input url
   - [x] queue related
-  - [ ] skip songs over a certain length
+  - [x] skip songs over a certain length
   - [ ] if there's already a radio, add a confirmation message
 - [x] /status
-- [ ] /skip (count=1)
-- [ ] /seek (seconds)
+- [x] /skip (count=1)
+- [ ] /clear
+- [ ] /add (url) (position?)
 - [ ] /pause and /resume
-- [ ] /add (url)
+- [ ] /seek (seconds)
 - /remove
   - [ ] show a dropdown menu with all of the songs in the queue
   - [ ] click to uncheck songs, all initially checked
   - [ ] remove all unchecked songs (keep checked songs)
   - [ ] paginate this
   - [ ] consider an autocomplete option when that comes out
-- [ ] /clear
 - [ ] /search (or just make /radio do a search on an invalid url)
 
 ## internal
@@ -32,5 +32,6 @@
 ## status enhancements
 
 - [x] current playing time, maybe in a fun loading bar type thing
+- [ ] show total length in footer
 - [ ] arrows to navigate pages
 - [ ] close button
