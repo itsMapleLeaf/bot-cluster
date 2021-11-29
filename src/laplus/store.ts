@@ -44,10 +44,19 @@ async function checkQueue() {
 
   state.status = "loading"
 
-  const stream = await ytdl(song.youtubeUrl, { filter: "audioonly" })
+  try {
+    const stream = await ytdl(song.youtubeUrl, { filter: "audioonly" })
+    player.play(createAudioResource(stream))
+    state.status = "playing"
+  } catch (error) {
+    state.status = "idle"
 
-  player.play(createAudioResource(stream))
-  state.status = "playing"
+    checkQueue().catch((error) => {
+      textChannel?.send({ embeds: [errorEmbedOptions(error)] })
+    })
+
+    throw error
+  }
 }
 
 export async function addSongToQueue(youtubeVideoUrl: string) {

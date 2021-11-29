@@ -2,7 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@discordjs/voice': ^0.7.5
-  '@itsmapleleaf/gatekeeper': ^0.8.0
+  '@itsmapleleaf/gatekeeper': ^0.8.1-0
   '@types/node': ^16.11.10
   discord.js: ^13.3.1
   dotenv: ^10.0.0
@@ -21,7 +21,7 @@ specifiers:
 
 dependencies:
   '@discordjs/voice': 0.7.5
-  '@itsmapleleaf/gatekeeper': 0.8.0_discord.js@13.3.1
+  '@itsmapleleaf/gatekeeper': 0.8.1-0_discord.js@13.3.1
   discord.js: 13.3.1
   dotenv: 10.0.0
   execa: 6.0.0
@@ -86,15 +86,14 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@itsmapleleaf/gatekeeper/0.8.0_discord.js@13.3.1:
-    resolution: {integrity: sha512-3O8p/58dt7nVJj4N9MzJYcV3FwpoGWGGXeDAlU+srr7i3EqPKrBCQcb92x2ZrNg0DMu8tlFNoKfODhVZCqHOCQ==}
+  /@itsmapleleaf/gatekeeper/0.8.1-0_discord.js@13.3.1:
+    resolution: {integrity: sha512-OxatAu3PhBU99aeoykfCwjNJY9EmQcgQ2MrYFa8EIaB5P/PqaXiR0Ypuo/1HzI2TGbE2E6pYq/P3828smODmMA==}
     peerDependencies:
       discord.js: '>=13'
     dependencies:
       chalk: 4.1.2
       discord.js: 13.3.1
       fast-glob: 3.2.7
-      tslib: 2.3.1
     dev: false
 
   /@nodelib/fs.scandir/2.1.5:

@@ -3,12 +3,12 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon --exec esmo --no-warnings --inspect=5858 src/main.ts",
-    "start": "esmo src/main.ts",
+    "start": "esmo --no-warnings src/main.ts",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts"
   },
   "dependencies": {
     "@discordjs/voice": "^0.7.5",
-    "@itsmapleleaf/gatekeeper": "^0.8.0",
+    "@itsmapleleaf/gatekeeper": "^0.8.1-0",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
     "execa": "^6.0.0",
