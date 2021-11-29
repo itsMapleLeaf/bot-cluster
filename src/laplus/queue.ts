@@ -1,4 +1,4 @@
-import { observable } from "mobx"
+import { makeAutoObservable, observable } from "mobx"
 import ytdl from "ytdl-core-discord"
 import type { Song } from "./song.js"
 import {
@@ -15,6 +15,13 @@ class QueueStore {
   get currentSong() {
     return this.state.status === "playing" ? this.state.song : undefined
   }
+
+  constructor() {
+    makeAutoObservable(this, {
+      state: observable.ref,
+      songs: observable.shallow,
+    })
+  }
 }
 
 const lengthLimitSeconds = 60 * 10
@@ -22,10 +29,15 @@ const lengthLimitSeconds = 60 * 10
 export type Queue = ReturnType<typeof createQueue>
 
 export function createQueue() {
-  const store = observable(new QueueStore(), {
-    state: observable.ref,
-    songs: observable.shallow,
-  })
+  const store = new QueueStore()
+
+  function advance() {
+    if (store.songs.length > 0) {
+      store.state = { status: "playing", song: store.songs.shift()! }
+    } else {
+      store.state = { status: "idle" }
+    }
+  }
 
   async function queueWithRelated(youtubeUrl: string, requesterUserId: string) {
     const info = await ytdl.getInfo(youtubeUrl)
@@ -44,18 +56,14 @@ export function createQueue() {
 
     store.songs.push(song, ...relatedVideos)
 
+    if (store.state.status === "idle") {
+      advance()
+    }
+
     return {
       song,
       relatedCount: relatedVideos.length,
       skippedCount: info.related_videos.length - relatedVideos.length,
-    }
-  }
-
-  function advance() {
-    if (store.songs.length > 0) {
-      store.state = { status: "playing", song: store.songs.shift()! }
-    } else {
-      store.state = { status: "idle" }
     }
   }
 
