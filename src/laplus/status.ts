@@ -2,7 +2,7 @@ import type { InteractionContext, ReplyHandle } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { observerReply } from "./observer-reply.js"
 import { queueEmbed } from "./queue-embed.js"
-import { queue } from "./singletons.js"
+import { queue, queuePlayer } from "./singletons.js"
 import { songDetailsEmbed } from "./song-details-embed.js"
 
 let currentId: NodeJS.Timer | undefined
@@ -19,16 +19,18 @@ export function createStatusReply(context: InteractionContext, header = "") {
       return "Nothing's playing at the moment."
     }
 
-    const progress = 0.5
-    // (Date.now() / 1000 - state.startTimeSeconds) /
-    // state.song.durationSeconds
+    const progress = Math.min(
+      queuePlayer.progressSeconds / state.song.durationSeconds,
+      1,
+    )
 
     return [
       header,
       embedComponent(songDetailsEmbed(state.song, progress)),
-      embedComponent(
-        queueEmbed(songs, (1 - progress) * state.song.durationSeconds),
-      ),
+      songs.length > 0 &&
+        embedComponent(
+          queueEmbed(songs, (1 - progress) * state.song.durationSeconds),
+        ),
     ]
   })
 
