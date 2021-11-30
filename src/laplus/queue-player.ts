@@ -79,6 +79,10 @@ export function createQueuePlayer(
     handleError(error, lastSong)
   })
 
+  player.on("stateChange", (oldState, newState) => {
+    console.info(`Stage change: ${oldState.status} -> ${newState.status}`)
+  })
+
   player.on(
     AudioPlayerStatus.Idle,
     createEffect(() => {
