@@ -92,7 +92,7 @@ export function createQueuePlayer(
         if (player.state.status === AudioPlayerStatus.Idle) {
           queue.advance()
         }
-      }, 1000)
+      }, 5000)
       return () => clearTimeout(id)
     }),
   )
