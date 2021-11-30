@@ -1,5 +1,6 @@
 import type { MessageEmbedOptions } from "discord.js"
 import prettyMilliseconds from "pretty-ms"
+import { joinContentfulStrings } from "./join-contentful-strings.js"
 import type { Song } from "./song.js"
 
 export function queueEmbed(
@@ -7,6 +8,11 @@ export function queueEmbed(
   currentSongProgressSeconds: number,
 ): MessageEmbedOptions {
   let time = currentSongProgressSeconds
+
+  const totalDurationSeconds = songs.reduce(
+    (total, song) => total + song.durationSeconds,
+    0,
+  )
 
   return {
     color: "#86198f",
@@ -25,7 +31,13 @@ export function queueEmbed(
       })
       .join("\n"),
     footer: {
-      text: `${songs.length} songs`,
+      text: joinContentfulStrings(
+        [
+          songs.length > 5 && `+${songs.length - 5} songs`,
+          `${prettyMilliseconds(totalDurationSeconds * 1000)} total`,
+        ],
+        " ∙ ",
+      ),
     },
   }
 }

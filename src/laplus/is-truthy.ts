@@ -1,4 +1,4 @@
-type Falsy = false | undefined | null | "" | 0
+import type { Falsy } from "./types.js"
 
 export function isTruthy<T>(value: T | Falsy): value is T {
   return Boolean(value)

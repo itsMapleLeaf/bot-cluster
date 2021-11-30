@@ -4,7 +4,7 @@
   - [x] queue input url
   - [x] queue related
   - [x] skip songs over a certain length
-  - [ ] if there's already a mix, add a confirmation message
+  - [ ] if there's already a mix, add a confirmation message to replace it
 - [x] /status
 - [x] /skip (count=1)
 - [x] /clear
@@ -36,10 +36,10 @@
 
 ## status enhancements
 
-- [ ] current playing time
+- [x] current playing time
 - [x] current playing time as loading bar
-- [ ] instead of total songs, show count for non-visible songs (`Math.max(total - 5, 0)`, hidden if 0)
-- [ ] show total length in footer
+- [x] instead of total songs, show count for non-visible songs (`Math.max(total - 5, 0)`, hidden if 0)
+- [x] show total length in footer
 - [ ] arrows to navigate pages
 - [ ] close button
 
@@ -49,3 +49,5 @@
   - at the moment, the queue player tries to advance immediately when going idle. it should wait a bit (presumably for the network to wake up again), _then_ advance if still idle
 - [x] errors get shown twice
 - [ ] sometimes 403 happens and stops the stream, but if seeking works, can use that as a form of recovery
+- [ ] retry on 403 when running ytdl
+- [ ] don't show "0 skipped"

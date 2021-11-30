@@ -1,4 +1,5 @@
 import type { MessageEmbedOptions } from "discord.js"
+import prettyMilliseconds from "pretty-ms"
 import type { Song } from "./song.js"
 
 const progressWidth = 16
@@ -13,10 +14,18 @@ export function songDetailsEmbed(
     "🟪".repeat(progressFilledCount) +
     "⬛".repeat(progressWidth - progressFilledCount)
 
+  const durationMs = song.durationSeconds * 1000
+  const progressDisplay = prettyMilliseconds(progress * durationMs, {
+    colonNotation: true,
+  })
+  const durationDisplay = prettyMilliseconds(durationMs, {
+    colonNotation: true,
+  })
+
   return {
     title: song.title,
     url: song.youtubeUrl,
-    description: `<@!${song.requesterUserId}> ∙ ${song.duration}\n\n${progressBar}`,
+    description: `<@!${song.requesterUserId}> ∙ ${progressDisplay} / ${durationDisplay}\n\n${progressBar}`,
     author: {
       name: song.channelName,
       iconURL: song.channelAvatarUrl,
