@@ -44,7 +44,7 @@
 
 ## bugs
 
-- [ ] fix streams sometimes ending early with no error
+- [x] fix streams sometimes ending early with no error
   - at the moment, the queue player tries to advance immediately when going idle. it should wait a bit (presumably for the network to wake up again), _then_ advance if still idle
-- [ ] errors get shown twice
+- [x] errors get shown twice
 - [ ] sometimes 403 happens and stops the stream, but if seeking works, can use that as a form of recovery
