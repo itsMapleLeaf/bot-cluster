@@ -24,7 +24,7 @@ class QueueStore {
   }
 }
 
-const lengthLimitSeconds = 60 * 10
+const lengthLimitSeconds = 60 * 15
 
 export type Queue = ReturnType<typeof createQueue>
 
