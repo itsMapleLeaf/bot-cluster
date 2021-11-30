@@ -2,7 +2,7 @@ import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { VoiceChannel } from "discord.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { queue, queuePlayer, textChannelPresence } from "../singletons.js"
+import { queue, queuePlayer } from "../singletons.js"
 import { createStatusReply } from "../status.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
@@ -35,10 +35,6 @@ export default function addCommands(gatekeeper: Gatekeeper) {
 
       try {
         queuePlayer.joinVoiceChannel(voiceChannel)
-
-        if (context.channel) {
-          textChannelPresence.setTextChannel(context.channel)
-        }
 
         const result = await queue.queueWithRelated(
           context.options.url,
