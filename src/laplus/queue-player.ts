@@ -4,8 +4,10 @@ import {
   createAudioResource,
   getVoiceConnection,
   joinVoiceChannel as createVoiceConnection,
+  StreamType,
 } from "@discordjs/voice"
 import type { VoiceChannel } from "discord.js"
+import { execa } from "execa"
 import { autorun } from "mobx"
 import ytdl from "ytdl-core-discord"
 import { createEffect } from "./effect.js"
@@ -52,19 +54,36 @@ export function createQueuePlayer(
 
       let cancelled = false
 
-      ytdl(song.youtubeUrl, { filter: "audioonly" }).then(
-        (stream) => {
+      ytdl.getInfo(song.youtubeUrl).then(
+        (info) => {
           if (cancelled) return
-          stream.on("readable", () =>
-            console.info(song.title, "- Stream is readable"),
+
+          const format = ytdl.chooseFormat(info.formats, {
+            quality: "highestaudio",
+          })
+
+          const child = execa(
+            "wget",
+            [
+              "--quiet",
+              "--tries=3",
+              "--timeout=10",
+              "--waitretry=1",
+              "-O-",
+              format.url,
+            ],
+            { stderr: "inherit" },
           )
-          stream.on("pause", () => console.info(song.title, "- Stream paused"))
-          stream.on("resume", () =>
-            console.info(song.title, "- Stream resumed"),
+
+          child.catch((error) => {
+            handleError(error, song)
+          })
+
+          player.play(
+            createAudioResource(child.stdout!, {
+              inputType: StreamType.Arbitrary,
+            }),
           )
-          stream.on("close", () => console.info(song.title, "- Stream closed"))
-          stream.on("end", () => console.info(song.title, "- Stream ended"))
-          player.play(createAudioResource(stream))
         },
         (error) => handleError(error, song),
       )
