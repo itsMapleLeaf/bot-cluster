@@ -17,15 +17,24 @@ export function createQueuePlayer(
   onError: (error: unknown, song: Song | undefined) => void,
 ) {
   const player = createAudioPlayer()
+  let lastSong: Song | undefined // store the last song for error reporting
   let progressSeconds = 0
 
-  // store the last song for error reporting
-  let lastSong: Song | undefined
-
-  const handleError = (error: any, song: Song | undefined) => {
+  function handleError(error: any, song: Song | undefined) {
     if (error?.message === "aborted") return
     if (error?.constructor.name === "AbortError") return
     onError(error, song)
+  }
+
+  function joinVoiceChannel(voiceChannel: VoiceChannel) {
+    const connection = getVoiceConnection(voiceChannel.guild.id)
+    if (connection?.joinConfig.channelId !== voiceChannel.id) {
+      createVoiceConnection({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      }).subscribe(player)
+    }
   }
 
   autorun(
@@ -60,26 +69,25 @@ export function createQueuePlayer(
     handleError(error, lastSong)
   })
 
-  player.on(AudioPlayerStatus.Idle, () => {
-    queue.advance()
-  })
+  player.on(
+    AudioPlayerStatus.Idle,
+    createEffect(() => {
+      // playback might've just stalled for a little bit,
+      // so wait and check again to see if we're actually done
+      let id = setTimeout(() => {
+        if (player.state.status === AudioPlayerStatus.Idle) {
+          queue.advance()
+        }
+      }, 1000)
+      return () => clearTimeout(id)
+    }),
+  )
 
   setInterval(() => {
     if (player.state.status === AudioPlayerStatus.Playing) {
       progressSeconds += 1
     }
   }, 1000)
-
-  function joinVoiceChannel(voiceChannel: VoiceChannel) {
-    const connection = getVoiceConnection(voiceChannel.guild.id)
-    if (connection?.joinConfig.channelId !== voiceChannel.id) {
-      createVoiceConnection({
-        channelId: voiceChannel.id,
-        guildId: voiceChannel.guild.id,
-        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-      }).subscribe(player)
-    }
-  }
 
   return {
     get progressSeconds() {
