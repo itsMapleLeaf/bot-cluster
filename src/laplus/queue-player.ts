@@ -43,17 +43,27 @@ export function createQueuePlayer(
 
       const song = (lastSong = queue.store.currentSong)
       if (!song) {
+        console.info("No song to play, stopping")
         player.stop()
         return
       }
 
+      console.info(`Playing ${song.title} from ${song.youtubeUrl}`)
+
       let cancelled = false
 
-      ytdl(song.youtubeUrl, {
-        filter: "audioonly",
-      }).then(
+      ytdl(song.youtubeUrl, { filter: "audioonly" }).then(
         (stream) => {
           if (cancelled) return
+          stream.on("readable", () =>
+            console.info(song.title, "- Stream is readable"),
+          )
+          stream.on("pause", () => console.info(song.title, "- Stream paused"))
+          stream.on("resume", () =>
+            console.info(song.title, "- Stream resumed"),
+          )
+          stream.on("close", () => console.info(song.title, "- Stream closed"))
+          stream.on("end", () => console.info(song.title, "- Stream ended"))
           player.play(createAudioResource(stream))
         },
         (error) => handleError(error, song),
