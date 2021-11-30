@@ -45,7 +45,6 @@ export function createQueuePlayer(
       }).then(
         (stream) => {
           if (cancelled) return
-          stream.on("error", (error) => handleError(error, song))
           player.play(createAudioResource(stream))
         },
         (error) => handleError(error, song),
