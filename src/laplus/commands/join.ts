@@ -7,8 +7,6 @@ export default function addCommands(gatekeeper: Gatekeeper) {
     name: "join",
     description: "Kindly ask La+ to join you in your voice channel.",
     async run(context) {
-      context.defer()
-
       const voiceChannel = context.member?.voice.channel
       if (!(voiceChannel instanceof VoiceChannel)) {
         context.reply(() => [
