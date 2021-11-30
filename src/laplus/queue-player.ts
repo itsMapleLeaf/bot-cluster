@@ -7,25 +7,80 @@ import {
   StreamType,
 } from "@discordjs/voice"
 import type { VoiceChannel } from "discord.js"
-import { execa } from "execa"
 import { autorun } from "mobx"
 import ytdl from "ytdl-core-discord"
-import { createEffect } from "./effect.js"
 import type { Queue } from "./queue.js"
 import type { Song } from "./song.js"
 
+type QueuePlayerErrorCallback = (error: unknown, song: Song | undefined) => void
+
 export function createQueuePlayer(
   queue: Queue,
-  onError: (error: unknown, song: Song | undefined) => void,
+  onError: QueuePlayerErrorCallback,
 ) {
   const player = createAudioPlayer()
-  let lastSong: Song | undefined // store the last song for error reporting
   let progressSeconds = 0
+  let lastSong: Song | undefined // store the last song for error handling
 
-  function handleError(error: any, song: Song | undefined) {
-    if (error?.message === "aborted") return
-    if (error?.constructor.name === "AbortError") return
-    onError(error, song)
+  autorun(() => {
+    const song = (lastSong = queue.store.currentSong)
+    progressSeconds = 0
+    if (song) {
+      playSong(song).catch((error) => {
+        Error.captureStackTrace(error as object)
+        onError(error, lastSong)
+      })
+    } else {
+      player.stop()
+    }
+  })
+
+  setInterval(() => {
+    if (player.state.status === AudioPlayerStatus.Playing) {
+      progressSeconds += 1
+    }
+  }, 1000)
+
+  let trackFailed = false
+
+  player.on("error", (error) => {
+    Error.captureStackTrace(error)
+    onError(error, lastSong)
+    trackFailed = true
+    progressSeconds = 0
+
+    // something went wrong, try playing it again
+    if (queue.store.currentSong) {
+      playSong(queue.store.currentSong).catch((error) => {
+        Error.captureStackTrace(error as object)
+        onError(error, lastSong)
+      })
+    }
+  })
+
+  player.on("stateChange", (oldState, newState) => {
+    console.info(`State change: ${oldState.status} -> ${newState.status}`)
+
+    if (trackFailed) {
+      trackFailed = false
+      return
+    }
+
+    if (newState.status === AudioPlayerStatus.Idle) {
+      queue.advance()
+    }
+  })
+
+  async function playSong(song: Song) {
+    const chunkSizeMb = 5
+
+    const stream = await ytdl(song.youtubeUrl, {
+      filter: "audioonly",
+      quality: "highestaudio",
+      dlChunkSize: 1024 * 1024 * chunkSizeMb, // smaller chunk sizes can help prevent getting aborted
+    })
+
+    player.play(createAudioResource(stream, { inputType: StreamType.Opus }))
   }
 
   function joinVoiceChannel(voiceChannel: VoiceChannel) {
@@ -38,89 +93,6 @@ export function createQueuePlayer(
       }).subscribe(player)
     }
   }
-
-  autorun(
-    createEffect(() => {
-      progressSeconds = 0
-
-      const song = (lastSong = queue.store.currentSong)
-      if (!song) {
-        console.info("No song to play, stopping")
-        player.stop()
-        return
-      }
-
-      console.info(`Playing ${song.title} from ${song.youtubeUrl}`)
-
-      let cancelled = false
-
-      ytdl.getInfo(song.youtubeUrl).then(
-        (info) => {
-          if (cancelled) return
-
-          const format = ytdl.chooseFormat(info.formats, {
-            quality: "highestaudio",
-          })
-
-          const child = execa(
-            "wget",
-            [
-              "--quiet",
-              "--tries=3",
-              "--timeout=10",
-              "--waitretry=1",
-              "-O-",
-              format.url,
-            ],
-            { stderr: "inherit" },
-          )
-
-          child.catch((error) => {
-            handleError(error, song)
-          })
-
-          player.play(
-            createAudioResource(child.stdout!, {
-              inputType: StreamType.Arbitrary,
-            }),
-          )
-        },
-        (error) => handleError(error, song),
-      )
-
-      return () => {
-        cancelled = true
-      }
-    }),
-  )
-
-  player.on("error", (error) => {
-    handleError(error, lastSong)
-  })
-
-  player.on("stateChange", (oldState, newState) => {
-    console.info(`Stage change: ${oldState.status} -> ${newState.status}`)
-  })
-
-  player.on(
-    AudioPlayerStatus.Idle,
-    createEffect(() => {
-      // playback might've just stalled for a little bit,
-      // so wait and check again to see if we're actually done
-      let id = setTimeout(() => {
-        if (player.state.status === AudioPlayerStatus.Idle) {
-          queue.advance()
-        }
-      }, 5000)
-      return () => clearTimeout(id)
-    }),
-  )
-
-  setInterval(() => {
-    if (player.state.status === AudioPlayerStatus.Playing) {
-      progressSeconds += 1
-    }
-  }, 1000)
 
   return {
     get progressSeconds() {

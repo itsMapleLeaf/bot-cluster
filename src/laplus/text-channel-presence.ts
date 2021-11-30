@@ -1,5 +1,6 @@
 import type { TextBasedChannels } from "discord.js"
 import { errorEmbedOptions } from "./error-embed.js"
+import { logErrorStack } from "./log-error-stack.js"
 import type { Song } from "./song.js"
 
 export function createTextChannelPresence() {
@@ -10,7 +11,7 @@ export function createTextChannelPresence() {
   }
 
   function reportSongError(error: unknown, song: Song | undefined) {
-    console.error(error)
+    logErrorStack(error)
 
     textChannel
       ?.send({ embeds: [errorEmbedOptions(error, song?.youtubeUrl)] })
