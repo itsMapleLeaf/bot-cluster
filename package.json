@@ -2,21 +2,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec esmo --no-warnings --inspect=5858 src/main.ts",
-    "start": "esmo --no-warnings src/main.ts",
+    "dev": "concurrently 'nodemon --exec esmo --no-warnings --inspect=5858 src/main.ts' 'pnpm lavalink'",
+    "start": "concurrently 'esmo --no-warnings src/main.ts' 'pnpm lavalink'",
     "typecheck": "tsc --noEmit",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts",
     "lint": "eslint --ext js,ts,tsx .",
     "lint-fix": "npm run lint -- --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "lavalink": "java -jar Lavalink.jar"
   },
   "dependencies": {
     "@discordjs/voice": "^0.7.5",
     "@itsmapleleaf/gatekeeper": "^0.9.0",
+    "concurrently": "^6.4.0",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
+    "erela.js": "^2.3.3",
     "execa": "^6.0.0",
     "googleapis": "^92.0.0",
+    "lavaclient": "^4.0.5",
     "libsodium-wrappers": "^0.7.9",
     "mobx": "^6.3.8",
     "opusscript": "^0.0.8",
