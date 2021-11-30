@@ -22,6 +22,7 @@
 ## internal
 
 - [x] on errors, show the related url that couldn't load
+- [ ] proper logger
 
 ## features
 
