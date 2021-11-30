@@ -13,7 +13,7 @@ export function observerReply(
   let reply: ReplyHandle | undefined
   let content: RenderResult
 
-  const cleanup = autorun(() => {
+  const unsubscribe = autorun(() => {
     content = renderFn()
     if (!reply) {
       reply = context.reply(() => content)
@@ -32,7 +32,8 @@ export function observerReply(
     },
     delete: () => {
       reply?.delete()
-      cleanup()
+      unsubscribe()
     },
+    unsubscribe,
   }
 }

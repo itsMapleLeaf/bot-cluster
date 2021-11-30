@@ -2,7 +2,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently 'nodemon --exec esmo --no-warnings --inspect=5858 src/main.ts' 'pnpm lavalink'",
+    "dev": "npm-run-all dev-bots lavalink",
+    "dev-bots": "nodemon --exec esmo --no-warnings --enable-source-maps --inspect=5858 src/main.ts",
     "start": "concurrently 'esmo --no-warnings src/main.ts' 'pnpm lavalink'",
     "typecheck": "tsc --noEmit",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts",
@@ -26,12 +27,14 @@
     "opusscript": "^0.0.8",
     "pretty-ms": "^7.0.1",
     "youtube.ts": "^0.2.2",
+    "youtubei": "^0.0.1-rc.27",
     "ytdl-core": "^4.9.1",
     "ytdl-core-discord": "^1.3.1",
     "zod": "^3.11.6"
   },
   "devDependencies": {
     "@itsmapleleaf/configs": "^1.0.3",
+    "@lavaclient/types": "^2.0.11",
     "@types/node": "^16.11.11",
     "@typescript-eslint/eslint-plugin": "^5.5.0",
     "@typescript-eslint/parser": "^5.5.0",
@@ -43,6 +46,7 @@
     "esno": "^0.12.1",
     "node-fetch": "^3.1.0",
     "nodemon": "^2.0.15",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.5.0",
     "type-fest": "^2.6.0",
     "typescript": "^4.5.2"
