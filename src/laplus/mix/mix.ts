@@ -1,6 +1,6 @@
 import { action, observable } from "mobx"
-import type { RelatedResult, YoutubeVideo } from "./youtube.js"
-import { findRelated, isLiveVideo, isPlaylist } from "./youtube.js"
+import type { RelatedResult, YoutubeVideo } from "../youtube.js"
+import { findRelated, isLiveVideo, isPlaylist } from "../youtube.js"
 
 const maxDurationSeconds = 60 * 15
 
@@ -65,7 +65,9 @@ export function createMix() {
   })
 
   return {
-    store,
+    get store(): Readonly<typeof store> {
+      return store
+    },
 
     get isEmpty() {
       return store.songs.length === 0
@@ -84,6 +86,7 @@ export function createMix() {
         store.songs = []
         store.ignoredLiveCount = 0
         store.ignoredPlaylistCount = 0
+        store.ignoredLengthyCount = 0
         store.status = "collectingSongs"
 
         addSongs([video, ...video.related])
@@ -93,6 +96,10 @@ export function createMix() {
       } finally {
         store.status = "idle"
       }
+    },
+
+    next() {
+      return store.songs.shift()
     },
   }
 }

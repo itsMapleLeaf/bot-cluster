@@ -8,12 +8,15 @@ import type {
   IncomingMessage,
   LoadTracksResponse,
   OutgoingMessage,
+  PlayerEvent,
 } from "@lavaclient/types"
 import { LoadType } from "@lavaclient/types"
 import type { BaseGuildVoiceChannel, Client } from "discord.js"
 import fetch from "node-fetch"
 import { WebSocket } from "ws"
 import { raise } from "../helpers/errors.js"
+import { getMixPlayerForGuild } from "./mix/mix-manager.js"
+import { textChannelPresence } from "./singletons.js"
 
 const lavalinkHost = "localhost:2333"
 const lavalinkPassword = "youshallnotpass"
@@ -35,13 +38,30 @@ export function connectToLavalink(client: Client) {
 
   socket.on("message", (data) => {
     const message: IncomingMessage = JSON.parse(String(data))
-    console.info("[Lavalink]", message)
+    // if (message.op === "playerUpdate") {
+    //   console.info(`Lavalink player update`, message)
+    // }
+    // if (message.op === "stats") {
+    //   console.info(`Lavalink stats`, message)
+    // }
+    if (message.op === "event") {
+      handleLavalinkEvent(message)
+    }
   })
 
   return new Promise((resolve, reject) => {
     socket.on("open", resolve)
     socket.on("error", reject)
   })
+}
+
+function handleLavalinkEvent(event: PlayerEvent) {
+  console.log("Lavalink event", event)
+  if (event.type === "TrackEndEvent" && event.track) {
+    getMixPlayerForGuild(event.guildId)
+      .playNext()
+      .catch(textChannelPresence.reportError)
+  }
 }
 
 export function connectToVoiceChannel(channel: BaseGuildVoiceChannel) {

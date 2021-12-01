@@ -1,7 +1,10 @@
-import type { TextBasedChannels } from "discord.js"
+import type {
+  MessageOptions,
+  MessagePayload,
+  TextBasedChannels,
+} from "discord.js"
 import { logErrorStack } from "../helpers/errors.js"
 import { errorEmbedOptions } from "./error-embed.js"
-import type { Song } from "./song.js"
 
 export function createTextChannelPresence() {
   let textChannel: TextBasedChannels | undefined
@@ -10,18 +13,20 @@ export function createTextChannelPresence() {
     textChannel = channel
   }
 
-  function reportSongError(error: unknown, song: Song | undefined) {
-    logErrorStack(error)
+  function send(content: string | MessagePayload | MessageOptions) {
+    textChannel?.send(content).catch((error) => {
+      console.warn("Failed to send message to text channel:", error)
+    })
+  }
 
-    textChannel
-      ?.send({ embeds: [errorEmbedOptions(error, song?.youtubeUrl)] })
-      .catch((error) => {
-        console.warn("Failed to send message to text channel:", error)
-      })
+  function reportError(error: unknown) {
+    send({ embeds: [errorEmbedOptions(error)] })
+    logErrorStack(error)
   }
 
   return {
     setTextChannel,
-    reportSongError,
+    send,
+    reportError,
   }
 }

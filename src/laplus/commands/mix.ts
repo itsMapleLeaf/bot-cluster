@@ -1,10 +1,10 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { Util } from "discord.js"
-import { observable } from "mobx"
 import { logErrorStack } from "../../helpers/errors.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { getMixForGuild } from "../mix-manager.js"
+import { connectToVoiceChannel } from "../lavalink.js"
+import { getMixForGuild, getMixPlayerForGuild } from "../mix/mix-manager.js"
 import { observerReply } from "../observer-reply.js"
 import { findVideoByUserInput } from "../youtube.js"
 import { confirm } from "./confirm.js"
@@ -24,13 +24,16 @@ export default function addCommands(gatekeeper: Gatekeeper) {
 
     async run(context) {
       try {
-        const guildId = context.guild?.id
-        if (!guildId) {
-          context.reply(() => "You need to be in a guild to do that. Baka.")
-          return
+        const voiceChannel = context.member?.voice.channel
+        if (!voiceChannel) {
+          return context.reply(
+            () => "You need to be in a voice channel to do that. Baka.",
+          )
         }
 
-        const mix = getMixForGuild(guildId)
+        await connectToVoiceChannel(voiceChannel)
+
+        const mix = getMixForGuild(voiceChannel.guildId)
         if (mix.isCollectingSongs) {
           context.reply(() => "This mix is busy. Try again later.")
           return
@@ -64,8 +67,6 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           return
         }
 
-        const isDone = observable.box(false)
-
         const { unsubscribe } = observerReply(context, () => [
           embedComponent({
             title: `**${Util.escapeMarkdown(video.title)}**`,
@@ -78,15 +79,18 @@ export default function addCommands(gatekeeper: Gatekeeper) {
               `Ignored **${mix.store.ignoredLengthyCount}** long video(s)`,
             ].join("\n"),
             footer: {
-              text: "Tip: In case you aren't finding many songs, individual songs work best as a seed.",
+              text: "Tip: In case you aren't finding many songs, individual songs work best to start with.",
             },
           }),
-          isDone.get() && "Done.",
         ])
 
         await mix.collectSongs(video)
-        isDone.set(true)
         unsubscribe()
+
+        const player = getMixPlayerForGuild(voiceChannel.guildId)
+        await player.playNext()
+
+        // show status message
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         logErrorStack(error)
