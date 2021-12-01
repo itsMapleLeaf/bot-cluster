@@ -8,6 +8,7 @@ specifiers:
   '@types/node': ^16.11.11
   '@typescript-eslint/eslint-plugin': ^5.5.0
   '@typescript-eslint/parser': ^5.5.0
+  chalk: ^4
   concurrently: ^6.4.0
   discord-api-types: ^0.25.2
   discord.js: ^13.3.1
@@ -42,6 +43,7 @@ specifiers:
 dependencies:
   '@discordjs/voice': 0.7.5_opusscript@0.0.8
   '@itsmapleleaf/gatekeeper': 0.9.0_discord.js@13.3.1
+  chalk: 4.1.2
   concurrently: 6.4.0
   discord.js: 13.3.1
   dotenv: 10.0.0

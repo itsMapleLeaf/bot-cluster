@@ -35,9 +35,5 @@ export function songDetailsEmbed(
     thumbnail: {
       url: song.thumbnailUrl,
     },
-    // using a very wide 1px tall image for a consistent width
-    // image: {
-    //   url: `https://cdn.discordapp.com/attachments/855734996424458250/882782767442710578/Invisible_embed.png`,
-    // },
   }
 }

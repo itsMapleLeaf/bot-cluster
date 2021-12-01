@@ -4,11 +4,12 @@
   - [x] queue input url
   - [x] queue related
   - [x] skip songs over a certain length
-  - [ ] if there's already a mix, add a confirmation message to replace it
-- [x] /status
+  - [x] if there's already a mix, add a confirmation message to replace it
+- [x] /now-playing
 - [x] /skip (count=1)
-- [x] /clear
+- [ ] /clear
 - [ ] /add (url) (position?)
+  - probably don't add this, this defeats the purpose of the bot
 - [ ] /pause and /resume
 - [ ] /seek (seconds)
 - /remove
@@ -17,7 +18,7 @@
   - [ ] remove all unchecked songs (keep checked songs)
   - [ ] paginate this
   - [ ] consider an autocomplete option when that comes out
-- [ ] /search (or just make /mix do a search on an invalid url)
+- [ ] /stats
 
 ## internal
 
@@ -28,26 +29,36 @@
 
 - [ ] get more related videos when queue ends
 - persist player state via github gist
-  - [x] current playing song
-  - [x] queue
+  - [ ] current playing song
+  - [ ] queue
   - [ ] song position
   - [ ] voice channel - re-join the channel on startup
 - [ ] role-based permissions
+- [ ] saved mixes + switching between them
+  - remove the mix replace confirmation if adding this
 
-## status enhancements
+## now playing / queue
 
-- [x] current playing time
-- [x] current playing time as loading bar
-- [x] instead of total songs, show count for non-visible songs (`Math.max(total - 5, 0)`, hidden if 0)
-- [x] show total length in footer
+- now playing
+  - [x] title / url
+  - [x] channel name
+  - [ ] channel avatar?
+  - [x] thumbnail
+  - [x] progress / duration
+  - [x] progress bar
+  - [ ] seed song
+  - [ ] mix author
+- queue (next 5)
+  - [x] **[title](url)** [duration]
+  - [x] (additional song count) ∙ (total queue duration)
 - [ ] arrows to navigate pages
 - [ ] close button
 
 ## bugs
 
-- [ ] fix streams sometimes ending early with no error
+- [x] fix streams sometimes ending early with no error (fixed by using lavalink)
   - at the moment, the queue player tries to advance immediately when going idle. it should wait a bit (presumably for the network to wake up again), _then_ advance if still idle
 - [x] errors get shown twice
-- [ ] sometimes 403 happens and stops the stream, but if seeking works, can use that as a form of recovery
-- [ ] retry on 403 when running ytdl
-- [ ] don't show "0 skipped"
+- [x] sometimes 403 happens and stops the stream, but if seeking works, can use that as a form of recovery (fixed with lavalink)
+- [x] retry on 403 when running ytdl
+- [x] don't show "0 skipped"

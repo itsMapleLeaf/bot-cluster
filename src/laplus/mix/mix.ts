@@ -1,4 +1,5 @@
 import { action, observable } from "mobx"
+import type { PositiveInteger } from "../../helpers/is-positive-integer.js"
 import type { RelatedResult, YoutubeVideo } from "../youtube.js"
 import { findRelated, isLiveVideo, isPlaylist } from "../youtube.js"
 
@@ -98,7 +99,8 @@ export function createMix() {
       }
     },
 
-    next() {
+    next(advanceCount = 1 as PositiveInteger) {
+      store.songs.splice(0, advanceCount - 1)
       return store.songs.shift()
     },
   }

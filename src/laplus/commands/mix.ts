@@ -2,12 +2,13 @@ import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { Util } from "discord.js"
 import { logErrorStack } from "../../helpers/errors.js"
+import { confirm } from "../confirm.js"
 import { errorEmbedOptions } from "../error-embed.js"
 import { connectToVoiceChannel } from "../lavalink.js"
 import { getMixForGuild, getMixPlayerForGuild } from "../mix/mix-manager.js"
+import { showNowPlaying } from "../now-playing-message.js"
 import { observerReply } from "../observer-reply.js"
 import { findVideoByUserInput } from "../youtube.js"
-import { confirm } from "./confirm.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
@@ -90,7 +91,7 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         const player = getMixPlayerForGuild(voiceChannel.guildId)
         await player.playNext()
 
-        // show status message
+        showNowPlaying(context, voiceChannel.guildId)
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         logErrorStack(error)
