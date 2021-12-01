@@ -9,8 +9,8 @@ import {
 import type { VoiceChannel } from "discord.js"
 import { autorun } from "mobx"
 import ytdl from "ytdl-core-discord"
+import type { Song } from "../song.js"
 import type { Queue } from "./queue.js"
-import type { Song } from "./song.js"
 
 type QueuePlayerErrorCallback = (error: unknown, song: Song | undefined) => void
 

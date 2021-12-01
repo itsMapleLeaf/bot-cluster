@@ -1,7 +1,7 @@
 import type { InteractionContext, ReplyHandle } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { observerReply } from "./observer-reply.js"
-import { queueEmbed } from "./queue-embed.js"
+import { queueEmbed } from "./queue/queue-embed.js"
 import { queue, queuePlayer } from "./singletons.js"
 import { songDetailsEmbed } from "./song-details-embed.js"
 

@@ -1,7 +1,6 @@
-import { observable, toJS } from "mobx"
+import { action, observable, toJS } from "mobx"
 import youtubei from "youtubei"
-import { firstResolved } from "./first-resolved.js"
-import { retryCount } from "./retry-count.js"
+import { firstResolved, retryCount } from "../helpers/async.js"
 
 const youtube = new youtubei.Client()
 
@@ -31,24 +30,24 @@ export function createRelatedVideoFinder(video: YoutubeVideo) {
     {
       videos: [] as youtubei.VideoCompact[],
       done: false,
-
-      addVideos(results: RelatedResult[]) {
-        for (const result of results) {
-          if (result instanceof youtubei.VideoCompact) {
-            this.videos.push(result)
-          }
-        }
-      },
     },
     { videos: observable.shallow },
   )
 
+  const addVideos = action(function addVideos(results: RelatedResult[]) {
+    for (const result of results) {
+      if (result instanceof youtubei.VideoCompact) {
+        store.videos.push(result)
+      }
+    }
+  })
+
   return {
     store,
     async run() {
-      store.addVideos(video.related)
+      addVideos(video.related)
       for await (const videos of findRelated(video)) {
-        store.addVideos(videos)
+        addVideos(videos)
       }
       store.done = true
       return toJS(store.videos)

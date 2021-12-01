@@ -1,3 +1,7 @@
+export function codeBlock(code: string) {
+  return ["```", code, "```"].join("\n")
+}
+
 import type { Falsy } from "./types.js"
 
 export function joinContentfulStrings(

@@ -1,7 +1,7 @@
 import type { MessageEmbedOptions } from "discord.js"
 import prettyMilliseconds from "pretty-ms"
-import { joinContentfulStrings } from "./join-contentful-strings.js"
-import type { Song } from "./song.js"
+import { joinContentfulStrings } from "../../helpers/format.js"
+import type { Song } from "../song.js"
 
 export function queueEmbed(
   songs: Song[],

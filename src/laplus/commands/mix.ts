@@ -1,8 +1,8 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { Util } from "discord.js"
+import { logErrorStack } from "../../helpers/errors.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { logErrorStack } from "../log-error-stack.js"
 import { observerReply } from "../observer-reply.js"
 import { createRelatedVideoFinder, findVideoByUserInput } from "../youtube.js"
 

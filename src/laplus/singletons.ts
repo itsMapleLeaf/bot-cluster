@@ -1,6 +1,6 @@
-import { persistQueue } from "./queue-persistence.js"
-import { createQueuePlayer } from "./queue-player.js"
-import { createQueue } from "./queue.js"
+import { persistQueue } from "./queue/queue-persistence.js"
+import { createQueuePlayer } from "./queue/queue-player.js"
+import { createQueue } from "./queue/queue.js"
 import { createTextChannelPresence } from "./text-channel-presence.js"
 
 export const textChannelPresence = createTextChannelPresence()

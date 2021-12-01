@@ -1,10 +1,10 @@
 import { makeAutoObservable, observable } from "mobx"
 import ytdl from "ytdl-core-discord"
-import type { Song } from "./song.js"
+import type { Song } from "../song.js"
 import {
   createSongFromRelatedVideo,
   createSongFromVideoDetails,
-} from "./song.js"
+} from "../song.js"
 
 type QueueState = { status: "idle" } | { status: "playing"; song: Song }
 

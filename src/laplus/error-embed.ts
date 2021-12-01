@@ -1,6 +1,6 @@
 import type { MessageEmbedOptions } from "discord.js"
-import { toError } from "../helpers.js"
-import { isTruthy } from "./is-truthy.js"
+import { toError } from "../helpers/errors.js"
+import { isTruthy } from "../helpers/is-truthy.js"
 
 export function errorEmbedOptions(
   error: unknown,
