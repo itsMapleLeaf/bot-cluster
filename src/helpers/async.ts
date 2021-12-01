@@ -9,6 +9,21 @@ export function debounce<Args extends unknown[]>(
   }
 }
 
+export function throttle<Args extends unknown[]>(
+  periodMs: number,
+  fn: (...args: Args) => void,
+) {
+  let timeoutId: NodeJS.Timeout | undefined
+  let nextArgs: Args | undefined
+  return (...args: Args) => {
+    nextArgs = args
+    timeoutId ??= setTimeout(() => {
+      timeoutId = undefined
+      fn(...nextArgs!)
+    }, periodMs)
+  }
+}
+
 export async function retryCount<Result>(
   count: number,
   fn: () => Result | Promise<Result>,

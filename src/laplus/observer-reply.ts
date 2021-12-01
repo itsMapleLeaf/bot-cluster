@@ -5,20 +5,24 @@ import type {
   ReplyHandle,
 } from "@itsmapleleaf/gatekeeper"
 import { autorun } from "mobx"
+import { throttle } from "../helpers/async.js"
 
 export function observerReply(
   context: InteractionContext,
   renderFn: RenderReplyFn,
+  { throttleUpdatesMs = 500 } = {},
 ) {
   let reply: ReplyHandle | undefined
   let content: RenderResult
+
+  const refresh = throttle(throttleUpdatesMs, () => reply?.refresh())
 
   const unsubscribe = autorun(() => {
     content = renderFn()
     if (!reply) {
       reply = context.reply(() => content)
     } else {
-      reply.refresh()
+      refresh()
     }
   })
 
@@ -28,7 +32,7 @@ export function observerReply(
     },
     refresh: () => {
       content = renderFn()
-      reply?.refresh()
+      refresh()
     },
     delete: () => {
       reply?.delete()
