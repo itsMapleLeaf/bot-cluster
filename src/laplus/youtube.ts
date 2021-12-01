@@ -4,7 +4,6 @@ import { firstResolved, retryCount } from "../helpers/async.js"
 const youtube = new youtubei.Client()
 
 export type YoutubeVideo = youtubei.Video | youtubei.LiveVideo
-
 export type RelatedResult = youtubei.VideoCompact | youtubei.PlaylistCompact
 
 export async function findVideoByUserInput(
@@ -44,8 +43,17 @@ async function tryGetNextRelated(
   }
 }
 
-export function isNonLiveVideo(
+export function isPlaylist(
+  video: YoutubeVideo | RelatedResult,
+): video is youtubei.PlaylistCompact {
+  return video instanceof youtubei.PlaylistCompact
+}
+
+export function isLiveVideo(
   item: YoutubeVideo | RelatedResult,
-): item is youtubei.Video | youtubei.VideoCompact {
-  return item instanceof youtubei.Video || item instanceof youtubei.VideoCompact
+): item is youtubei.LiveVideo | youtubei.VideoCompact {
+  return (
+    item instanceof youtubei.LiveVideo ||
+    (item instanceof youtubei.VideoCompact && item.isLive)
+  )
 }
