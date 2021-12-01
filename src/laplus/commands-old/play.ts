@@ -1,5 +1,5 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
-import { manager } from "../lavalink.js"
+import { manager } from "../lavalink.old.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({

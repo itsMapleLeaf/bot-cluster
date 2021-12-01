@@ -1,27 +1,121 @@
-import { Manager } from "erela.js"
-import { client } from "./client.js"
+import type { VoiceConnectionReadyState } from "@discordjs/voice"
+import {
+  getVoiceConnection,
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+} from "@discordjs/voice"
+import type {
+  IncomingMessage,
+  LoadTracksResponse,
+  OutgoingMessage,
+} from "@lavaclient/types"
+import { LoadType } from "@lavaclient/types"
+import type { BaseGuildVoiceChannel, Client } from "discord.js"
+import fetch from "node-fetch"
+import { WebSocket } from "ws"
+import { raise } from "../helpers/errors.js"
 
-export const manager = new Manager({
-  send: (id, payload) => {
-    client.guilds.cache.get(id)?.shard.send(payload)
-  },
-})
+const lavalinkHost = "localhost:2333"
+const lavalinkPassword = "youshallnotpass"
 
-// Emitted whenever a node connects
-manager.on("nodeConnect", (node) => {
-  console.log(`Node "${node.options.identifier}" connected.`)
-})
+let socket: WebSocket
 
-// Emitted whenever a node encountered an error
-manager.on("nodeError", (node, error) => {
-  console.log(
-    `Node "${node.options.identifier}" encountered an error: ${error.message}.`,
+function send(message: OutgoingMessage) {
+  socket?.send(JSON.stringify(message))
+}
+
+export function connectToLavalink(client: Client) {
+  socket = new WebSocket(`ws://${lavalinkHost}`, {
+    headers: {
+      "Authorization": lavalinkPassword,
+      "User-Id": client.user?.id ?? raise("Bot user not found"),
+      "Client-Name": "La+",
+    },
+  })
+
+  socket.on("message", (data) => {
+    const message: IncomingMessage = JSON.parse(String(data))
+    console.info("[Lavalink]", message)
+  })
+
+  return new Promise((resolve, reject) => {
+    socket.on("open", resolve)
+    socket.on("error", reject)
+  })
+}
+
+export function connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
+  if (getVoiceConnection(channel.guild.id)) {
+    return Promise.resolve()
+  }
+
+  const connection = joinVoiceChannel({
+    channelId: channel.id,
+    guildId: channel.guild.id,
+    selfDeaf: true,
+    adapterCreator: channel.guild.voiceAdapterCreator,
+  })
+
+  connection.on("stateChange", (oldState, newState) => {
+    console.info(`State changed: ${oldState.status} -> ${newState.status}`)
+  })
+
+  return new Promise<void>((resolve, reject) => {
+    connection.on(VoiceConnectionStatus.Ready, (_, state) => {
+      resolve()
+      handleVoiceConnectionNetworkingStateChange(
+        state.networking.state,
+        channel,
+      )
+      state.networking.on("stateChange", (_, state) => {
+        handleVoiceConnectionNetworkingStateChange(state, channel)
+      })
+    })
+    connection.on("error", reject)
+  })
+}
+
+function handleVoiceConnectionNetworkingStateChange(
+  state: VoiceConnectionReadyState["networking"]["state"],
+  channel: BaseGuildVoiceChannel,
+) {
+  if ("connectionOptions" in state) {
+    const { sessionId, token, endpoint } = state.connectionOptions
+    send({
+      op: "voiceUpdate",
+      guildId: channel.guild.id,
+      sessionId,
+      event: { token, endpoint },
+    })
+  }
+}
+
+export function playTrack(guildId: string, track: string) {
+  send({ op: "play", guildId, track })
+}
+
+export async function loadTrack(
+  identifier: string,
+): Promise<string | undefined> {
+  const response = await fetch(
+    `http://${lavalinkHost}/loadtracks?identifier=${identifier}`,
+    {
+      headers: { Authorization: lavalinkPassword },
+    },
   )
-})
 
-client.once("ready", () => {
-  manager.init(client.user?.id)
-})
+  const result = (await response.json()) as LoadTracksResponse
 
-// THIS IS REQUIRED. Send raw events to Erela.js
-client.on("raw", (d) => manager.updateVoiceState(d))
+  switch (result.loadType) {
+    case LoadType.TrackLoaded:
+    case LoadType.PlaylistLoaded:
+    case LoadType.SearchResult:
+      return result.tracks[0]?.track
+
+    case LoadType.NoMatches:
+      return undefined
+
+    case LoadType.LoadFailed:
+      throw new Error(result.exception.message)
+  }
+}
