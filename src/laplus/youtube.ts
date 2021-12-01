@@ -1,4 +1,3 @@
-import { action, observable, toJS } from "mobx"
 import youtubei from "youtubei"
 import { firstResolved, retryCount } from "../helpers/async.js"
 
@@ -25,37 +24,7 @@ async function findVideoBySearchQuery(query: string) {
   return await (partialVideo as youtubei.VideoCompact)?.getVideo()
 }
 
-export function createRelatedVideoFinder(video: YoutubeVideo) {
-  const store = observable(
-    {
-      videos: [] as youtubei.VideoCompact[],
-      done: false,
-    },
-    { videos: observable.shallow },
-  )
-
-  const addVideos = action(function addVideos(results: RelatedResult[]) {
-    for (const result of results) {
-      if (result instanceof youtubei.VideoCompact) {
-        store.videos.push(result)
-      }
-    }
-  })
-
-  return {
-    store,
-    async run() {
-      addVideos(video.related)
-      for await (const videos of findRelated(video)) {
-        addVideos(videos)
-      }
-      store.done = true
-      return toJS(store.videos)
-    },
-  }
-}
-
-async function* findRelated(
+export async function* findRelated(
   video: YoutubeVideo,
 ): AsyncGenerator<RelatedResult[]> {
   let results
@@ -73,4 +42,10 @@ async function tryGetNextRelated(
     console.warn("Failed to load related videos:", error)
     return []
   }
+}
+
+export function isNonLiveVideo(
+  item: YoutubeVideo | RelatedResult,
+): item is youtubei.Video | youtubei.VideoCompact {
+  return item instanceof youtubei.Video || item instanceof youtubei.VideoCompact
 }

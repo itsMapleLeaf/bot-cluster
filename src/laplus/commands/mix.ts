@@ -3,8 +3,9 @@ import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { Util } from "discord.js"
 import { logErrorStack } from "../../helpers/errors.js"
 import { errorEmbedOptions } from "../error-embed.js"
+import { createMixEntryCollector } from "../mix.js"
 import { observerReply } from "../observer-reply.js"
-import { createRelatedVideoFinder, findVideoByUserInput } from "../youtube.js"
+import { findVideoByUserInput } from "../youtube.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
@@ -30,15 +31,14 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           return
         }
 
-        const finder = createRelatedVideoFinder(video)
+        const collector = createMixEntryCollector(video)
 
         const { unsubscribe } = observerReply(context, () => [
           `Starting mix: **${Util.escapeMarkdown(video.title)}**`,
-          `Found ${finder.store.videos.length} related videos...`,
-          finder.store.done && "Done.",
+          `Found ${collector.store.songs.length} songs...`,
         ])
 
-        const relatedVideos = await finder.run()
+        const relatedVideos = await collector.run()
         unsubscribe()
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
