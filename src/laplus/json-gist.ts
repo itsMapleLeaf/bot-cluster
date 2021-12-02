@@ -3,6 +3,7 @@ import fetch from "node-fetch"
 import type { JsonValue } from "type-fest"
 
 // requires that the gist is already created lol
+// eslint-disable-next-line import/no-unused-modules
 export function createJsonGist(gistId: string, fileName: string) {
   return {
     async load(): Promise<JsonValue> {

@@ -119,7 +119,7 @@ export function connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
   })
 }
 
-function handleVoiceConnectionNetworkingStateChange(
+async function handleVoiceConnectionNetworkingStateChange(
   state: VoiceConnectionReadyState["networking"]["state"],
   channel: BaseGuildVoiceChannel,
 ) {

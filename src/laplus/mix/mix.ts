@@ -7,7 +7,7 @@ const maxDurationSeconds = 60 * 15
 
 export type Mix = ReturnType<typeof createMix>
 
-export type MixStatus = "idle" | "collectingSongs"
+type MixStatus = "idle" | "collectingSongs"
 
 export type MixSong = {
   title: string
@@ -24,6 +24,7 @@ export function createMix() {
     {
       status: "idle" as MixStatus,
       songs: [] as MixSong[],
+      // TODO: turn this into a single ignoredCounts object
       ignoredLiveCount: 0,
       ignoredPlaylistCount: 0,
       ignoredLengthyCount: 0,

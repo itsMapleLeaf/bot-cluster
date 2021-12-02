@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unused-modules */
 export function debounce<Args extends unknown[]>(
   periodMs: number,
   fn: (...args: Args) => void,

@@ -4,5 +4,5 @@
     "useDefineForClassFields": true,
     "skipLibCheck": true
   },
-  "exclude": ["node_modules", "temp.json"]
+  "exclude": ["node_modules"]
 }
