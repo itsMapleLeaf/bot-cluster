@@ -7,23 +7,22 @@
   - [x] if there's already a mix, add a confirmation message to replace it
 - [x] /now-playing
 - [x] /skip (count=1)
-- [ ] /clear
-- [ ] /add (url) (position?)
-  - probably don't add this, this defeats the purpose of the bot
-- [ ] /pause and /resume
-- [ ] /seek (seconds)
+- [x] /clear
+- [x] /pause and /resume
+- [x] /seek (seconds)
+- [x] /stats
 - /remove
   - [ ] show a dropdown menu with all of the songs in the queue
   - [ ] click to uncheck songs, all initially checked
   - [ ] remove all unchecked songs (keep checked songs)
   - [ ] paginate this
   - [ ] consider an autocomplete option when that comes out
-- [ ] /stats
 
 ## internal
 
 - [x] on errors, show the related url that couldn't load
 - [ ] proper logger
+- [ ] lavalink reconnection
 
 ## features
 

@@ -85,6 +85,8 @@ export function createMixPlayer(guildId: string) {
       return (player.state.position ?? 0) / 1000
     },
 
+    playNext,
+
     async joinVoiceChannel(channel: BaseGuildVoiceChannel) {
       await player.connectToVoiceChannel(channel)
     },
@@ -94,6 +96,22 @@ export function createMixPlayer(guildId: string) {
       await playNext(count)
     },
 
-    playNext,
+    clear() {
+      mix.clear()
+      currentSong.set(undefined)
+      player.stop()
+    },
+
+    pause() {
+      player.pause()
+    },
+
+    resume() {
+      player.resume()
+    },
+
+    seek(seconds: number) {
+      player.seek(seconds)
+    },
   }
 }

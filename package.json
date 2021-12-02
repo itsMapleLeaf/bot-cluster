@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "npm-run-all dev-bots lavalink",
     "dev-bots": "nodemon --exec esmo --no-warnings --enable-source-maps --inspect=5858 src/main.ts",
-    "start": "concurrently 'esmo --no-warnings src/main.ts' 'pnpm lavalink'",
+    "start": "npm-run-all start-bots lavalink",
+    "start-bots": "esmo --no-warnings src/main.ts",
     "typecheck": "tsc --noEmit",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts",
     "lint": "eslint --ext js,ts,tsx .",

@@ -4,6 +4,7 @@ import { Util } from "discord.js"
 import { logErrorStack } from "../../helpers/errors.js"
 import { requireVoiceChannel, withGuards } from "../command-guards.js"
 import { confirm } from "../confirm.js"
+import { defaultEmbedColor } from "../constants.js"
 import { errorEmbedOptions } from "../error-embed.js"
 import { getMixPlayerForGuild } from "../mix/mix-player-manager.js"
 import { showNowPlaying } from "../now-playing-message.js"
@@ -64,7 +65,9 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         }
 
         const { unsubscribe } = observerReply(context, () => [
+          "Finding songs...",
           embedComponent({
+            color: defaultEmbedColor,
             title: `**${Util.escapeMarkdown(video.title)}**`,
             url: `https://www.youtube.com/watch?v=${video.id}`,
             thumbnail: { url: video.thumbnails.min },

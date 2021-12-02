@@ -102,5 +102,13 @@ export function createMix() {
       store.songs.splice(0, advanceCount - 1)
       return store.songs.shift()
     },
+
+    clear() {
+      store.songs = []
+    },
+
+    remove(songs: MixSong[]) {
+      store.songs = store.songs.filter((song) => !songs.includes(song))
+    },
   }
 }

@@ -12,8 +12,24 @@ import { raise } from "../helpers/errors.js"
 const lavalinkHost = "localhost:2333"
 const lavalinkPassword = "youshallnotpass"
 
+const stats = observable.box<lavaclient.StatsData>({
+  players: 0,
+  playingPlayers: 0,
+  uptime: 0,
+  memory: {
+    allocated: 0,
+    used: 0,
+    free: 0,
+    reservable: 0,
+  },
+  cpu: {
+    systemLoad: 0,
+    cores: 0,
+    lavalinkLoad: 0,
+  },
+})
+
 let socket: WebSocket
-let stats: lavaclient.StatsData | undefined
 
 function send(message: lavaclient.OutgoingMessage) {
   socket?.send(JSON.stringify(message))
@@ -32,7 +48,7 @@ export function connectToLavalink(client: Client) {
     const message: lavaclient.IncomingMessage = JSON.parse(String(data))
     if (message.op === "stats") {
       console.info(`Lavalink stats`, message)
-      stats = message
+      stats.set(message)
     }
   })
 
@@ -155,4 +171,8 @@ export async function loadLavalinkTrack(
     case LoadType.LoadFailed:
       throw new Error(result.exception.message)
   }
+}
+
+export function getLavalinkStats() {
+  return stats.get()
 }

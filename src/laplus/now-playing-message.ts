@@ -3,6 +3,7 @@ import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import type { MessageEmbedOptions } from "discord.js"
 import prettyMilliseconds from "pretty-ms"
 import { joinContentfulStrings } from "../helpers/format.js"
+import { defaultEmbedColor } from "./constants.js"
 import { getMixPlayerForGuild } from "./mix/mix-player-manager.js"
 import type { MixSong } from "./mix/mix.js"
 import { observerReply } from "./observer-reply.js"
@@ -64,6 +65,7 @@ function currentSongEmbed(
   })
 
   return {
+    color: defaultEmbedColor,
     title: song.title,
     url: `https://youtu.be/${song.youtubeId}`,
     description: [
@@ -76,7 +78,6 @@ function currentSongEmbed(
       iconURL: song.channelAvatarUrl,
       url: song.channelUrl,
     },
-    color: "#86198f",
     thumbnail: {
       url: song.thumbnailUrl,
     },
@@ -95,12 +96,12 @@ function queueEmbed(
   )
 
   return {
-    color: "#86198f",
+    color: defaultEmbedColor,
     title: "Queue",
     description: songs
       .slice(0, 5)
       .map((song) => {
-        const durationDisplay = prettyMilliseconds(song.durationSeconds)
+        const durationDisplay = prettyMilliseconds(song.durationSeconds * 1000)
         const timeUntilPretty = prettyMilliseconds(Math.round(time) * 1000)
 
         time += song.durationSeconds
