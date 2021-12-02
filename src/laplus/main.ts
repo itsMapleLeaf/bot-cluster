@@ -27,5 +27,6 @@ export async function run() {
   })
 
   await client.login(process.env.LAPLUS_TOKEN)
-  await connectToLavalink(client)
+
+  connectToLavalink(client)
 }

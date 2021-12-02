@@ -6,8 +6,8 @@ import { LoadType } from "@lavaclient/types"
 import type { BaseGuildVoiceChannel, Client } from "discord.js"
 import { observable } from "mobx"
 import fetch from "node-fetch"
-import { WebSocket } from "ws"
 import { raise } from "../helpers/errors.js"
+import { createSocket } from "./socket.js"
 
 const lavalinkHost = "localhost:2333"
 const lavalinkPassword = "youshallnotpass"
@@ -29,32 +29,27 @@ const stats = observable.box<lavaclient.StatsData>({
   },
 })
 
-let socket: WebSocket
+const socket = createSocket()
+
+socket.events.on("message", (data) => {
+  const message: lavaclient.IncomingMessage = JSON.parse(String(data))
+  if (message.op === "stats") {
+    console.info(`Lavalink stats`, message)
+    stats.set(message)
+  }
+})
 
 function send(message: lavaclient.OutgoingMessage) {
   socket?.send(JSON.stringify(message))
 }
 
 export function connectToLavalink(client: Client) {
-  socket = new WebSocket(`ws://${lavalinkHost}`, {
+  socket.connect(`ws://${lavalinkHost}`, {
     headers: {
       "Authorization": lavalinkPassword,
       "User-Id": client.user?.id ?? raise("Bot user not found"),
       "Client-Name": "La+",
     },
-  })
-
-  socket.on("message", (data) => {
-    const message: lavaclient.IncomingMessage = JSON.parse(String(data))
-    if (message.op === "stats") {
-      console.info(`Lavalink stats`, message)
-      stats.set(message)
-    }
-  })
-
-  return new Promise((resolve, reject) => {
-    socket.on("open", resolve)
-    socket.on("error", reject)
   })
 }
 
@@ -68,7 +63,7 @@ export function createLavalinkPlayer(
     position: 0,
   })
 
-  socket.on("message", (data) => {
+  socket.events.on("message", (data) => {
     const message: lavaclient.IncomingMessage = JSON.parse(String(data))
 
     if (message.op === "playerUpdate") {

@@ -22,7 +22,7 @@
 
 - [x] on errors, show the related url that couldn't load
 - [ ] proper logger
-- [ ] lavalink reconnection
+- [x] lavalink reconnection
 
 ## features
 
