@@ -1,6 +1,8 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
+import { Util } from "discord.js"
 import { logErrorStack } from "../../helpers/errors.js"
+import { joinContentfulStrings } from "../../helpers/format.js"
 import { isPositiveInteger } from "../../helpers/is-positive-integer.js"
 import { requireGuild, withGuards } from "../command-guards.js"
 import { errorEmbedOptions } from "../error-embed.js"
@@ -26,8 +28,24 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         return
       }
 
+      const player = getMixPlayerForGuild(guild.id)
+      const song = player.currentSong
+      if (!song) {
+        context.reply(() => "Nothing to skip. Baka.")
+        return
+      }
+
       try {
-        await getMixPlayerForGuild(guild.id).skip(count)
+        await player.skip(count)
+        context.reply(() =>
+          joinContentfulStrings(
+            [
+              `Skipped **${Util.escapeMarkdown(song.title)}**`,
+              count > 1 && `(and ${count - 1} other song(s))`,
+            ],
+            " ",
+          ),
+        )
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         logErrorStack(error)

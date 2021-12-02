@@ -1,3 +1,4 @@
+import { TrackEndReason } from "@lavaclient/types"
 import chalk from "chalk"
 import type { BaseGuildVoiceChannel } from "discord.js"
 import { Util } from "discord.js"
@@ -20,10 +21,6 @@ export function createMixPlayer(guildId: string) {
   const player = createLavalinkPlayer(guildId, (event) => {
     const song = currentSong.get()
 
-    if (event.type === "TrackEndEvent") {
-      playNext().catch(textChannelPresence.reportError)
-    }
-
     if (event.type === "TrackStuckEvent") {
       if (song) {
         textChannelPresence.reportError(
@@ -31,6 +28,7 @@ export function createMixPlayer(guildId: string) {
         )
       }
       playNext().catch(textChannelPresence.reportError)
+      return
     }
 
     if (event.type === "TrackExceptionEvent") {
@@ -40,6 +38,15 @@ export function createMixPlayer(guildId: string) {
         )
       }
       playNext().catch(textChannelPresence.reportError)
+      return
+    }
+
+    if (
+      event.type === "TrackEndEvent" &&
+      event.reason === TrackEndReason.Finished
+    ) {
+      playNext().catch(textChannelPresence.reportError)
+      return
     }
   })
 
