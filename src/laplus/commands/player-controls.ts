@@ -1,15 +1,17 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { clamp } from "../../helpers/clamp.js"
-import { requireGuild, withGuards } from "../command-guards.js"
-import { getMixPlayerForGuild } from "../mix/mix-player-manager.js"
+import {
+  requirePlayer,
+  requireVoiceChannel,
+  withGuards,
+} from "../command-guards.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
     name: "pause",
     description: "Pause the current song.",
     run: withGuards((context) => {
-      const guild = requireGuild(context)
-      getMixPlayerForGuild(guild.id).pause()
+      requirePlayer(context).pause()
       context.reply(() => "Paused.")
     }),
   })
@@ -17,9 +19,11 @@ export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
     name: "resume",
     description: "Resume playing.",
-    run: withGuards((context) => {
-      const guild = requireGuild(context)
-      getMixPlayerForGuild(guild.id).resume()
+    run: withGuards(async (context) => {
+      const channel = requireVoiceChannel(context)
+      const player = requirePlayer(context)
+      await player.joinVoiceChannel(channel)
+      player.resume()
       context.reply(() => "Resumed.")
     }),
   })
@@ -35,8 +39,7 @@ export default function addCommands(gatekeeper: Gatekeeper) {
       },
     },
     run: withGuards((context) => {
-      const guild = requireGuild(context)
-      const player = getMixPlayerForGuild(guild.id)
+      const player = requirePlayer(context)
 
       if (!player.currentSong) {
         context.reply(() => "No song playing. Baka.")
@@ -55,8 +58,7 @@ export default function addCommands(gatekeeper: Gatekeeper) {
     name: "clear",
     description: "Clear the current mix",
     run: withGuards((context) => {
-      const guild = requireGuild(context)
-      getMixPlayerForGuild(guild.id).clear()
+      requirePlayer(context).clear()
       context.reply(() => "Mix cleared.")
     }),
   })
