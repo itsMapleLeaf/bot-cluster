@@ -1,0 +1,12 @@
+FROM archlinux/archlinux:latest
+
+WORKDIR /app
+
+RUN pacman --sync --refresh --noconfirm wget jre-openjdk-headless
+RUN wget https://github.com/freyacodes/Lavalink/releases/download/3.4/Lavalink.jar
+
+COPY application.yml ./
+
+EXPOSE 2333
+
+CMD ["java", "-jar", "Lavalink.jar"]

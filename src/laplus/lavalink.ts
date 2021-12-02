@@ -9,8 +9,14 @@ import fetch from "node-fetch"
 import { raise } from "../helpers/errors.js"
 import { createSocket } from "./socket.js"
 
-const lavalinkHost = "localhost:2333"
-const lavalinkPassword = "youshallnotpass"
+const lavalinkSocketUrl =
+  process.env.LAVALINK_SOCKET ?? raise("LAVALINK_SOCKET not defined")
+
+const lavalinkHttpUrl =
+  process.env.LAVALINK_HTTP ?? raise("LAVALINK_HTTP not defined")
+
+const lavalinkPassword =
+  process.env.LAVALINK_PASSWORD ?? raise("LAVALINK_PASSWORD not defined")
 
 const stats = observable.box<lavaclient.StatsData>({
   players: 0,
@@ -44,7 +50,7 @@ function send(message: lavaclient.OutgoingMessage) {
 }
 
 export function connectToLavalink(client: Client) {
-  socket.connect(`ws://${lavalinkHost}`, {
+  socket.connect(lavalinkSocketUrl, {
     headers: {
       "Authorization": lavalinkPassword,
       "User-Id": client.user?.id ?? raise("Bot user not found"),
@@ -146,7 +152,7 @@ export async function loadLavalinkTrack(
   identifier: string,
 ): Promise<string | undefined> {
   const response = await fetch(
-    `http://${lavalinkHost}/loadtracks?identifier=${identifier}`,
+    `${lavalinkHttpUrl}/loadtracks?identifier=${identifier}`,
     {
       headers: { Authorization: lavalinkPassword },
     },

@@ -4,14 +4,17 @@
   "scripts": {
     "dev": "npm-run-all --parallel --print-label --race dev-bots lavalink",
     "dev-bots": "nodemon --exec esmo --no-warnings --enable-source-maps --inspect=5858 src/main.ts",
+    "dev-laplus": "nodemon --exec esmo --no-warnings --enable-source-maps --inspect=5858 src/laplus/main.ts",
     "start": "npm-run-all --parallel --print-label --race start-bots lavalink",
     "start-bots": "esmo --no-warnings src/main.ts",
+    "start-laplus": "esmo --no-warnings src/laplus/main.ts",
     "typecheck": "tsc --noEmit",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts",
     "lint": "eslint --ext js,ts,tsx .",
     "lint-fix": "npm run lint -- --fix",
     "format": "prettier --write .",
-    "lavalink": "java -jar Lavalink.jar",
+    "lavalink": "docker-compose up -d",
+    "lavalink-stop": "docker-compose down",
     "depcheck": "depcheck"
   },
   "dependencies": {
