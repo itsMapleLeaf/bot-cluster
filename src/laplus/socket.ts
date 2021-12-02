@@ -22,6 +22,8 @@ export function createSocket() {
   ) {
     if (socket) return
 
+    console.info(`Connecting to ${url}`)
+
     socket = new WebSocket(url, options)
 
     socket.onopen = () => {

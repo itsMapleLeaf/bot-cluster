@@ -7,6 +7,7 @@ import type { BaseGuildVoiceChannel, Client } from "discord.js"
 import { observable } from "mobx"
 import fetch from "node-fetch"
 import { raise } from "../helpers/errors.js"
+import { textChannelPresence } from "./singletons.js"
 import { createSocket } from "./socket.js"
 
 const lavalinkSocketUrl =
@@ -63,10 +64,18 @@ export function createLavalinkPlayer(
   guildId: string,
   onEvent: (event: PlayerEvent) => void,
 ) {
+  let voiceChannel: BaseGuildVoiceChannel | undefined
+
   const state = observable.box<PlayerUpdateState>({
     connected: false,
     time: 0,
     position: 0,
+  })
+
+  socket.events.on("open", () => {
+    if (voiceChannel) {
+      connectToVoiceChannel(voiceChannel).catch(textChannelPresence.reportError)
+    }
   })
 
   socket.events.on("message", (data) => {
@@ -97,34 +106,38 @@ export function createLavalinkPlayer(
     }
   }
 
+  function connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
+    const current = discordVoice.getVoiceConnection(guildId)
+    if (current?.joinConfig.channelId === channel.id) {
+      return Promise.resolve()
+    }
+
+    const connection = discordVoice.joinVoiceChannel({
+      guildId,
+      channelId: channel.id,
+      adapterCreator: channel.guild.voiceAdapterCreator,
+      selfDeaf: true,
+    })
+
+    return new Promise<void>((resolve, reject) => {
+      connection.on(discordVoice.VoiceConnectionStatus.Ready, (_, state) => {
+        resolve()
+        voiceChannel = channel
+        handleVoiceConnectionNetworkingStateChange(state.networking.state)
+        state.networking.on("stateChange", (_, state) => {
+          handleVoiceConnectionNetworkingStateChange(state)
+        })
+      })
+      connection.on("error", reject)
+    })
+  }
+
   return {
     get state(): Readonly<PlayerUpdateState> {
       return state.get()
     },
 
-    connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
-      if (discordVoice.getVoiceConnection(guildId)) {
-        return Promise.resolve()
-      }
-
-      const connection = discordVoice.joinVoiceChannel({
-        guildId,
-        channelId: channel.id,
-        adapterCreator: channel.guild.voiceAdapterCreator,
-        selfDeaf: true,
-      })
-
-      return new Promise<void>((resolve, reject) => {
-        connection.on(discordVoice.VoiceConnectionStatus.Ready, (_, state) => {
-          resolve()
-          handleVoiceConnectionNetworkingStateChange(state.networking.state)
-          state.networking.on("stateChange", (_, state) => {
-            handleVoiceConnectionNetworkingStateChange(state)
-          })
-        })
-        connection.on("error", reject)
-      })
-    },
+    connectToVoiceChannel,
 
     play(track: string) {
       send({ op: "play", guildId, track })
