@@ -3,7 +3,7 @@ import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import type { MessageEmbedOptions } from "discord.js"
 import prettyMilliseconds from "pretty-ms"
 import { joinContentfulStrings } from "../helpers/format.js"
-import { getMixForGuild, getMixPlayerForGuild } from "./mix/mix-manager.js"
+import { getMixPlayerForGuild } from "./mix/mix-player-manager.js"
 import type { MixSong } from "./mix/mix.js"
 import { observerReply } from "./observer-reply.js"
 
@@ -14,12 +14,9 @@ export function showNowPlaying(context: InteractionContext, guildId: string) {
   if (currentId) clearInterval(currentId)
   reply?.delete()
 
-  const mix = getMixForGuild(guildId)
-  const player = getMixPlayerForGuild(guildId)
-
   reply = observerReply(context, () => {
-    const { songs } = mix.store
-    const { currentSong, progressSeconds } = player.state
+    const { currentSong, progressSeconds, songs } =
+      getMixPlayerForGuild(guildId)
 
     if (!currentSong) {
       return "Nothing's playing at the moment."

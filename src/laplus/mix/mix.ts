@@ -5,8 +5,6 @@ import { findRelated, isLiveVideo, isPlaylist } from "../youtube.js"
 
 const maxDurationSeconds = 60 * 15
 
-export type Mix = ReturnType<typeof createMix>
-
 type MixStatus = "idle" | "collectingSongs"
 
 export type MixSong = {

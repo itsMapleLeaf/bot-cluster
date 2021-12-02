@@ -2,10 +2,10 @@ import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { Util } from "discord.js"
 import { logErrorStack } from "../../helpers/errors.js"
+import { requireVoiceChannel, withGuards } from "../command-guards.js"
 import { confirm } from "../confirm.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { connectToVoiceChannel } from "../lavalink.js"
-import { getMixForGuild, getMixPlayerForGuild } from "../mix/mix-manager.js"
+import { getMixPlayerForGuild } from "../mix/mix-player-manager.js"
 import { showNowPlaying } from "../now-playing-message.js"
 import { observerReply } from "../observer-reply.js"
 import { findVideoByUserInput } from "../youtube.js"
@@ -23,24 +23,19 @@ export default function addCommands(gatekeeper: Gatekeeper) {
       },
     },
 
-    async run(context) {
+    run: withGuards(async (context) => {
       try {
-        const voiceChannel = context.member?.voice.channel
-        if (!voiceChannel) {
-          return context.reply(
-            () => "You need to be in a voice channel to do that. Baka.",
-          )
-        }
+        const voiceChannel = requireVoiceChannel(context)
 
-        await connectToVoiceChannel(voiceChannel)
+        const player = getMixPlayerForGuild(voiceChannel.guildId)
+        await player.joinVoiceChannel(voiceChannel)
 
-        const mix = getMixForGuild(voiceChannel.guildId)
-        if (mix.isCollectingSongs) {
+        if (player.mix.isCollectingSongs) {
           context.reply(() => "This mix is busy. Try again later.")
           return
         }
 
-        if (!mix.isEmpty) {
+        if (!player.mix.isEmpty) {
           const shouldContinue = await confirm({
             context,
             query: [
@@ -74,10 +69,10 @@ export default function addCommands(gatekeeper: Gatekeeper) {
             url: `https://www.youtube.com/watch?v=${video.id}`,
             thumbnail: { url: video.thumbnails.min },
             description: [
-              `Found **${mix.store.songs.length}** song(s)`,
-              `Ignored **${mix.store.ignoredLiveCount}** stream(s)`,
-              `Ignored **${mix.store.ignoredPlaylistCount}** playlist(s)`,
-              `Ignored **${mix.store.ignoredLengthyCount}** long video(s)`,
+              `Found **${player.songs.length}** song(s)`,
+              `Ignored **${player.mix.store.ignoredLiveCount}** stream(s)`,
+              `Ignored **${player.mix.store.ignoredPlaylistCount}** playlist(s)`,
+              `Ignored **${player.mix.store.ignoredLengthyCount}** long video(s)`,
             ].join("\n"),
             footer: {
               text: "Tip: In case you aren't finding many songs, individual songs work best to start with.",
@@ -85,10 +80,9 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           }),
         ])
 
-        await mix.collectSongs(video)
+        await player.mix.collectSongs(video)
         unsubscribe()
 
-        const player = getMixPlayerForGuild(voiceChannel.guildId)
         await player.playNext()
 
         showNowPlaying(context, voiceChannel.guildId)
@@ -96,6 +90,6 @@ export default function addCommands(gatekeeper: Gatekeeper) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         logErrorStack(error)
       }
-    },
+    }),
   })
 }

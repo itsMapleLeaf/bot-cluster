@@ -1,31 +1,21 @@
 import type { VoiceConnectionReadyState } from "@discordjs/voice"
-import {
-  getVoiceConnection,
-  joinVoiceChannel,
-  VoiceConnectionStatus,
-} from "@discordjs/voice"
-import type {
-  IncomingMessage,
-  LoadTracksResponse,
-  OutgoingMessage,
-  PlayerEvent,
-} from "@lavaclient/types"
+import * as discordVoice from "@discordjs/voice"
+import type * as lavaclient from "@lavaclient/types"
+import type { PlayerEvent, PlayerUpdateState } from "@lavaclient/types"
 import { LoadType } from "@lavaclient/types"
 import type { BaseGuildVoiceChannel, Client } from "discord.js"
-import { Util } from "discord.js"
+import { observable } from "mobx"
 import fetch from "node-fetch"
 import { WebSocket } from "ws"
 import { raise } from "../helpers/errors.js"
-import type { PositiveInteger } from "../helpers/is-positive-integer.js"
-import { getMixPlayerForGuild } from "./mix/mix-manager.js"
-import { textChannelPresence } from "./singletons.js"
 
 const lavalinkHost = "localhost:2333"
 const lavalinkPassword = "youshallnotpass"
 
 let socket: WebSocket
+let stats: lavaclient.StatsData | undefined
 
-function send(message: OutgoingMessage) {
+function send(message: lavaclient.OutgoingMessage) {
   socket?.send(JSON.stringify(message))
 }
 
@@ -39,21 +29,11 @@ export function connectToLavalink(client: Client) {
   })
 
   socket.on("message", (data) => {
-    const message: IncomingMessage = JSON.parse(String(data))
-
-    if (message.op === "event") {
-      console.info("Lavalink event", message)
-      handleLavalinkEvent(message)
+    const message: lavaclient.IncomingMessage = JSON.parse(String(data))
+    if (message.op === "stats") {
+      console.info(`Lavalink stats`, message)
+      stats = message
     }
-
-    if (message.op === "playerUpdate") {
-      console.info("Lavalink player update", message)
-      const player = getMixPlayerForGuild(message.guildId)
-      player.setProgressSeconds((message.state.position ?? 0) / 1000)
-    }
-    // if (message.op === "stats") {
-    //   console.info(`Lavalink stats`, message)
-    // }
   })
 
   return new Promise((resolve, reject) => {
@@ -62,100 +42,96 @@ export function connectToLavalink(client: Client) {
   })
 }
 
-function handleLavalinkEvent(event: PlayerEvent) {
-  const player = getMixPlayerForGuild(event.guildId)
-  const currentSong = player.state.currentSong
-  const currentSongTitle = Util.escapeMarkdown(currentSong?.title ?? "")
-
-  if (event.type === "TrackEndEvent") {
-    player.playNext().catch(textChannelPresence.reportError)
-  }
-
-  if (event.type === "TrackStuckEvent") {
-    textChannelPresence.send(`Track "${currentSongTitle}" got stuck, skipping.`)
-    console.warn(
-      `Track "${currentSongTitle}" got stuck, skipping. ID:`,
-      currentSong?.youtubeId,
-    )
-    player.playNext().catch(textChannelPresence.reportError)
-  }
-
-  if (event.type === "TrackExceptionEvent") {
-    textChannelPresence.send(
-      `An error occurred loading "${currentSongTitle}", skipping.`,
-    )
-    console.warn(
-      `An error occurred loading "${currentSongTitle}", skipping.`,
-      currentSong?.youtubeId,
-    )
-    player.playNext().catch(textChannelPresence.reportError)
-  }
-}
-
-export function connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
-  if (getVoiceConnection(channel.guild.id)) {
-    return Promise.resolve()
-  }
-
-  const connection = joinVoiceChannel({
-    channelId: channel.id,
-    guildId: channel.guild.id,
-    selfDeaf: true,
-    adapterCreator: channel.guild.voiceAdapterCreator,
-  })
-
-  return new Promise<void>((resolve, reject) => {
-    connection.on(VoiceConnectionStatus.Ready, (_, state) => {
-      resolve()
-      handleVoiceConnectionNetworkingStateChange(
-        state.networking.state,
-        channel,
-      )
-      state.networking.on("stateChange", (_, state) => {
-        handleVoiceConnectionNetworkingStateChange(state, channel)
-      })
-    })
-    connection.on("error", reject)
-  })
-}
-
-async function handleVoiceConnectionNetworkingStateChange(
-  state: VoiceConnectionReadyState["networking"]["state"],
-  channel: BaseGuildVoiceChannel,
+export function createLavalinkPlayer(
+  guildId: string,
+  onEvent: (event: PlayerEvent) => void,
 ) {
-  if ("connectionOptions" in state) {
-    const { sessionId, token, endpoint } = state.connectionOptions
-    send({
-      op: "voiceUpdate",
-      guildId: channel.guild.id,
-      sessionId,
-      event: { token, endpoint },
-    })
+  const state = observable.box<PlayerUpdateState>({
+    connected: false,
+    time: 0,
+    position: 0,
+  })
+
+  socket.on("message", (data) => {
+    const message: lavaclient.IncomingMessage = JSON.parse(String(data))
+
+    if (message.op === "playerUpdate") {
+      console.info("Lavalink player update", message)
+      state.set(message.state)
+    }
+
+    if (message.op === "event") {
+      console.info("Lavalink event", message)
+      onEvent(message)
+    }
+  })
+
+  function handleVoiceConnectionNetworkingStateChange(
+    state: VoiceConnectionReadyState["networking"]["state"],
+  ) {
+    if ("connectionOptions" in state) {
+      const { sessionId, token, endpoint } = state.connectionOptions
+      send({
+        op: "voiceUpdate",
+        guildId,
+        sessionId,
+        event: { token, endpoint },
+      })
+    }
+  }
+
+  return {
+    get state(): Readonly<PlayerUpdateState> {
+      return state.get()
+    },
+
+    connectToVoiceChannel(channel: BaseGuildVoiceChannel) {
+      if (discordVoice.getVoiceConnection(guildId)) {
+        return Promise.resolve()
+      }
+
+      const connection = discordVoice.joinVoiceChannel({
+        guildId,
+        channelId: channel.id,
+        adapterCreator: channel.guild.voiceAdapterCreator,
+        selfDeaf: true,
+      })
+
+      return new Promise<void>((resolve, reject) => {
+        connection.on(discordVoice.VoiceConnectionStatus.Ready, (_, state) => {
+          resolve()
+          handleVoiceConnectionNetworkingStateChange(state.networking.state)
+          state.networking.on("stateChange", (_, state) => {
+            handleVoiceConnectionNetworkingStateChange(state)
+          })
+        })
+        connection.on("error", reject)
+      })
+    },
+
+    play(track: string) {
+      send({ op: "play", guildId, track })
+    },
+
+    stop() {
+      send({ op: "stop", guildId })
+    },
+
+    pause() {
+      send({ op: "pause", guildId, pause: true })
+    },
+
+    resume() {
+      send({ op: "pause", guildId, pause: false })
+    },
+
+    seek(seconds: number) {
+      send({ op: "seek", guildId, position: seconds * 1000 })
+    },
   }
 }
 
-export function playTrack(guildId: string, track: string) {
-  send({ op: "play", guildId, track })
-}
-
-export async function skip(guildId: string, count = 1 as PositiveInteger) {
-  send({ op: "stop", guildId })
-  await getMixPlayerForGuild(guildId).playNext()
-}
-
-export function pause(guildId: string) {
-  send({ op: "pause", guildId, pause: true })
-}
-
-export function resume(guildId: string) {
-  send({ op: "pause", guildId, pause: false })
-}
-
-export function seek(guildId: string, seconds: number) {
-  send({ op: "seek", guildId, position: seconds * 1000 })
-}
-
-export async function loadTrack(
+export async function loadLavalinkTrack(
   identifier: string,
 ): Promise<string | undefined> {
   const response = await fetch(
@@ -165,7 +141,7 @@ export async function loadTrack(
     },
   )
 
-  const result = (await response.json()) as LoadTracksResponse
+  const result = (await response.json()) as lavaclient.LoadTracksResponse
 
   switch (result.loadType) {
     case LoadType.TrackLoaded:

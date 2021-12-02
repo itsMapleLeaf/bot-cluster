@@ -2,9 +2,9 @@ import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { embedComponent } from "@itsmapleleaf/gatekeeper"
 import { logErrorStack } from "../../helpers/errors.js"
 import { isPositiveInteger } from "../../helpers/is-positive-integer.js"
-import { requireGuild } from "../command-guards.js"
+import { requireGuild, withGuards } from "../command-guards.js"
 import { errorEmbedOptions } from "../error-embed.js"
-import { skip } from "../lavalink.js"
+import { getMixPlayerForGuild } from "../mix/mix-player-manager.js"
 
 export default function addCommands(gatekeeper: Gatekeeper) {
   gatekeeper.addSlashCommand({
@@ -17,8 +17,8 @@ export default function addCommands(gatekeeper: Gatekeeper) {
           "The number of songs to skip, including the current song. One by default.",
       },
     },
-    async run(context) {
-      if (!requireGuild(context)) return
+    run: withGuards(async (context) => {
+      const guild = requireGuild(context)
 
       const count = context.options.count ?? 1
       if (!isPositiveInteger(count)) {
@@ -27,11 +27,11 @@ export default function addCommands(gatekeeper: Gatekeeper) {
       }
 
       try {
-        await skip(context.guild.id, count)
+        await getMixPlayerForGuild(guild.id).skip(count)
       } catch (error) {
         context.reply(() => embedComponent(errorEmbedOptions(error)))
         logErrorStack(error)
       }
-    },
+    }),
   })
 }
