@@ -1,8 +1,6 @@
 {
-  "extends": "@itsmapleleaf/configs/tsconfig.app",
-  "compilerOptions": {
-    "useDefineForClassFields": true,
-    "skipLibCheck": true
-  },
-  "exclude": ["node_modules"]
+  "extends": "@itsmapleleaf/configs/tsconfig.base",
+  "exclude": [
+    "node_modules"
+  ]
 }

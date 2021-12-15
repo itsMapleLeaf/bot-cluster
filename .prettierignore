@@ -1,5 +1,2 @@
-build
-dist
-.yarn
+node_modules
 pnpm-lock.yaml
-.next

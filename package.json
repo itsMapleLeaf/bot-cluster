@@ -7,48 +7,49 @@
     "typecheck": "tsc --noEmit",
     "update-heroku-config": "esmo --no-warnings scripts/update-heroku-config.ts",
     "lint": "eslint --ext js,ts,tsx .",
-    "lint-fix": "npm run lint -- --fix",
+    "lint-fix": "pnpm lint -- --fix",
     "format": "prettier --write .",
     "depcheck": "depcheck"
   },
   "dependencies": {
     "@discordjs/voice": "^0.7.5",
-    "@itsmapleleaf/gatekeeper": "^0.9.0",
-    "chalk": "^4",
+    "@itsmapleleaf/configs": "^1.1.2",
+    "@itsmapleleaf/gatekeeper": "^0.9.1",
+    "@lavaclient/types": "^2.0.11",
+    "chalk": "^5.0.0",
     "concurrently": "^6.4.0",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
+    "esno": "^0.13.0",
     "execa": "^6.0.0",
     "googleapis": "^92.0.0",
     "libsodium-wrappers": "^0.7.9",
-    "mobx": "^6.3.8",
+    "mobx": "^6.3.9",
+    "node-fetch": "^3.1.0",
+    "npm-run-all": "^4.1.5",
     "opusscript": "^0.0.8",
     "pretty-ms": "^7.0.1",
-    "npm-run-all": "^4.1.5",
     "ws": "^8.3.0",
     "youtubei": "^0.0.1-rc.27",
-    "zod": "^3.11.6",
-    "esno": "^0.12.1",
-    "@itsmapleleaf/configs": "^1.0.4",
-    "node-fetch": "^3.1.0",
-    "@lavaclient/types": "^2.0.11"
+    "zod": "^3.11.6"
   },
   "devDependencies": {
-    "@types/node": "^16.11.11",
-    "@typescript-eslint/eslint-plugin": "^5.5.0",
-    "@typescript-eslint/parser": "^5.5.0",
+    "@types/node": "^17.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.7.0",
+    "@typescript-eslint/parser": "^5.7.0",
     "depcheck": "^1.4.2",
-    "eslint": "^8.3.0",
+    "eslint": "^8.4.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.27.1",
     "eslint-plugin-react-hooks": "^4.3.0",
+    "eslint-plugin-unicorn": "^39.0.0",
     "nodemon": "^2.0.15",
-    "prettier": "^2.5.0",
-    "type-fest": "^2.6.0",
-    "typescript": "^4.5.2"
+    "prettier": "^2.5.1",
+    "type-fest": "^2.8.0",
+    "typescript": "^4.5.4"
   },
   "engines": {
     "node": "^16 || ^17"
@@ -58,16 +59,8 @@
     "extends": [
       "./node_modules/@itsmapleleaf/configs/eslint"
     ],
-    "rules": {
-      "import/no-unused-modules": [
-        "warn",
-        {
-          "unusedExports": true,
-          "ignoreExports": [
-            "src/**/commands/**/*"
-          ]
-        }
-      ]
-    }
+    "ignorePatterns": [
+      "**/node_modules/**"
+    ]
   }
 }
