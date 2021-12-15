@@ -1,8 +1,0 @@
-version: "3.9"
-services:
-  lavalink:
-    build:
-      context: .
-      dockerfile: Dockerfile.lavalink
-    ports: ["2333:2333"]
-    
