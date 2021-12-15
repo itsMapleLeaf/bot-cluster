@@ -19,7 +19,7 @@ function rollDice(diceString: string) {
     const size = isPositiveInteger(sizeInput) ? sizeInput : 6
     const interpreted = `${count}d${size}`
 
-    const rolls = Array(Math.min(count, 9999999))
+    const rolls = Array.from({ length: Math.min(count, 9_999_999) })
       .fill(0)
       .map(() => Math.floor(Math.random() * size) + 1)
 

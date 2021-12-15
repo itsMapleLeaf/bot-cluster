@@ -19,7 +19,7 @@ export function createEmitter<T = void>(): Emitter<T> {
       }
     },
     emit(value) {
-      for (const fn of listeners) fn(value)
+      for (const callback of listeners) callback(value)
     },
   }
 }

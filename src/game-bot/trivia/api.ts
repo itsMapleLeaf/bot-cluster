@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { fetchJson } from "./fetchJson.js"
+import { fetchJson } from "./fetch-json.js"
 
 const multipleChoiceSchema = z
   .object({

@@ -49,7 +49,7 @@ async function handleMessage(message: Message | PartialMessage) {
     const isMentioned = message.mentions.has(client.user?.id!)
     if (!isMentioned) return
 
-    const [, , code] = message.content?.match(/(```|`)(?:js)?([^]*)(\1)/) ?? []
+    const code = message.content?.match(/(```|`)(?:js)?([^]*)(\1)/)?.[2]
     if (!code) return
 
     await message.reply(await runCode(code))

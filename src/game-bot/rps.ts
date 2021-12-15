@@ -1,7 +1,7 @@
 import type { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { buttonComponent } from "@itsmapleleaf/gatekeeper"
 import type { EmojiResolvable, User } from "discord.js"
-import { setTimeout } from "timers/promises"
+import { setTimeout } from "node:timers/promises"
 import { client } from "./main.js"
 
 type Choice = typeof choices[number]

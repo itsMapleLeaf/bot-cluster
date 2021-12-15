@@ -6,7 +6,7 @@ import type {
 import { buttonComponent, selectMenuComponent } from "@itsmapleleaf/gatekeeper"
 import type { TriviaCategory, TriviaQuestion } from "./api.js"
 import { fetchCategories, fetchQuestions } from "./api.js"
-import { commaSeparatedList } from "./commaSeparatedList.js"
+import { commaSeparatedList } from "./comma-separated-list.js"
 
 export const triviaCommand = (gatekeeper: Gatekeeper) =>
   gatekeeper.addSlashCommand({
