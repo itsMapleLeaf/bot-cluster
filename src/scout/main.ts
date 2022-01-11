@@ -1,6 +1,7 @@
 import type { Message, PartialMessage } from "discord.js"
 import { Client, Intents } from "discord.js"
 import { execa } from "execa"
+import { Logger } from "../helpers/logger.js"
 
 const denoPath = process.env.DENO_PATH || "deno"
 
@@ -32,13 +33,15 @@ const client = new Client({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 })
 
+const console = new Logger("[scout]")
+
 export async function run() {
   client.on("messageCreate", handleMessage)
   client.on("messageUpdate", handleMessage)
 
   await client.login(process.env.SCOUT_BOT_TOKEN)
 
-  console.info("scout is ready")
+  console.info("ready")
 }
 
 async function handleMessage(message: Message | PartialMessage) {
