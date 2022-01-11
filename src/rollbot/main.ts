@@ -1,5 +1,7 @@
-import { Gatekeeper } from "@itsmapleleaf/gatekeeper"
 import { Client, Intents } from "discord.js"
+import { ReacordDiscordJs } from "reacord"
+import { useCommands } from "../helpers/commands.js"
+import { Logger } from "../helpers/logger.js"
 import { rollCommand } from "./roll.js"
 
 export async function run() {
@@ -7,12 +9,11 @@ export async function run() {
     intents: [Intents.FLAGS.GUILDS],
   })
 
-  const gatekeeper = await Gatekeeper.create({
-    name: "rollbot",
-    client,
-  })
+  client.on("ready", () => new Logger("[rollbot]").info("ready"))
 
-  rollCommand(gatekeeper)
+  const reacord = new ReacordDiscordJs(client)
+
+  useCommands(client, [rollCommand(reacord)])
 
   await client.login(process.env.ROLLBOT_BOT_TOKEN)
 }
