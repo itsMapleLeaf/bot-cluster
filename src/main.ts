@@ -1,9 +1,4 @@
 import "dotenv/config.js"
-import { configure } from "mobx"
-
-configure({
-  enforceActions: "never",
-})
 
 type BotModule = {
   run: () => void
